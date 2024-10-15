@@ -21,8 +21,8 @@ spring:
 
   data:
     redis:
-      password: l1234567890
-      host: 106.52.57.96
+      password: passwod
+      host: host
       port: 6379
 
 # 对象存储
