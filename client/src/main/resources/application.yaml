@@ -6,7 +6,7 @@ spring:
   datasource:
     username: root
     password: 123456789
-    url: jdbc:mysql://127.0.0.1:3306/songjoyhub?useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&serverTimezone=UTC&useSSL=true
+    url: jdbc:mysql://127.0.0.1:3306/takeway?useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&serverTimezone=UTC&useSSL=true
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       pool-name: Retail_HikariCP
@@ -21,15 +21,8 @@ spring:
 
   data:
     redis:
-      password: l1234567890
-      host: 106.52.57.96
+      password: passwod
+      host: host
       port: 6379
 
-rocketmq:
-  name-server: 106.52.57.96:9876
-  producer:
-    group: lx-song_joy_hub_pg
-    send-message-timeout: 2000
-    retry-times-when-send-failed: 1
-    retry-times-when-send-async-failed: 1
 # 对象存储
