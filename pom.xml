@@ -6,10 +6,17 @@
 
     <groupId>com.lx.SongJobHub</groupId>
     <artifactId>SongJoyHub-all</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>Sevice</module>
+        <!-- 基础模块：包含公共内容，一个包引入构建所有组件 -->
+        <module>framework</module>
+        <!-- 客户端模块: 负责给顾客提供服务 调用其他服务 如 积分服务 播放服务-->
+        <module>client</module>
+        <!--后台管理模块：负责房间 歌曲的管理 -->
+        <module>admin</module>
+        <module>search</module>
+        <module>player</module>
     </modules>
 
     <properties>
@@ -26,6 +33,8 @@
         <guava.version>30.0-jre</guava.version>
         <bizlog-sdk.version>3.0.6</bizlog-sdk.version>
         <easyexcel.version>4.0.1</easyexcel.version>
+        <java-jwt.version>4.4.0</java-jwt.version>
+        <jjwt.version>0.9.1</jjwt.version>
         <rocketmq-spring-boot-starter.version>2.3.0</rocketmq-spring-boot-starter.version>
         <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
     </properties>
@@ -104,6 +113,18 @@
                 <groupId>org.apache.rocketmq</groupId>
                 <artifactId>rocketmq-spring-boot-starter</artifactId>
                 <version>${rocketmq-spring-boot-starter.version}</version>
+            </dependency>
+
+            <!-- jwt 相关 -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.auth0</groupId>
+                <artifactId>java-jwt</artifactId>
+                <version>${java-jwt.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
