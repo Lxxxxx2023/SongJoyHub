@@ -1,15 +1,18 @@
 package com.lx.SongJoyHub.client.util;
 
 
+import cn.hutool.jwt.signers.JWTSignerUtil;
 import com.alibaba.fastjson.JSON;
 import com.lx.SongJoyHub.client.common.context.UserInfoDTO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +25,7 @@ public final class JWTUtil {
     private static final long EXPIRATION = 64000L;
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String ISS = "SongJoyHub";
-    public static final String secret = "SecretKey021314197030124124944021431293103182085562949704914324920346";
+    private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
     /**
      * 生成用户token
@@ -33,9 +36,11 @@ public final class JWTUtil {
     public static String generateToken(UserInfoDTO userInfo) {
         Map<String, Object> userInfoMap = new HashMap<>();
         userInfoMap.put("userId", userInfo.getUserId());
-        userInfoMap.put("userRole", userInfo.getUserRole());
+        userInfoMap.put("userRole", userInfo.getUserRole().getRole());
+        userInfoMap.put("userName", userInfo.getUserName());
+        userInfoMap.put("roomId", userInfo.getRoomId());
         String jwtToken = Jwts.builder()
-                .signWith(SignatureAlgorithm.ES512, secret)
+                .signWith(SECRET_KEY)
                 .setIssuedAt(new Date())
                 .setIssuer(ISS)
                 .setSubject(JSON.toJSONString(userInfoMap))
@@ -48,7 +53,7 @@ public final class JWTUtil {
         if (StringUtils.hasText(jwtToken)) {
             String actualJwtToken = jwtToken.replace(TOKEN_PREFIX, "");
             try {
-                Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(actualJwtToken).getBody();
+                Claims claims = Jwts.parserBuilder().setSigningKey(SECRET_KEY).build().parseClaimsJws(actualJwtToken).getBody();
                 Date expiration = claims.getExpiration();
                 if (expiration.after(new Date())) {
                     String subject = claims.getSubject();
