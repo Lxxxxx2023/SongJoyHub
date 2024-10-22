@@ -17,6 +17,10 @@ public class UserInfoDTO {
     private String userId;
 
     /**
+     * 房间号
+     */
+    private String roomId;
+    /**
      * 用户名
      */
     private String userName;
