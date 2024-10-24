@@ -40,8 +40,8 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, MemberDO> imple
     @Override
     public void register(MemberRegisterReqDTO requestParam) {
         // 参数校验
-        if (StrUtil.isBlank(requestParam.getName())) {
-            throw new ServiceException("用户名不能未空 且不能有空格");
+        if (StrUtil.isBlank(requestParam.getRealName())) {
+            throw new ServiceException("用户名不能为空 且不能有空格");
         }
         Pattern pattern = Pattern.compile(SystemConstant.PASSWORD_PATTERN);
         Matcher matcher = pattern.matcher(requestParam.getPassword());
@@ -75,7 +75,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, MemberDO> imple
                 .eq(MemberDO::getPassword, requestParam.getPassword());
         MemberDO memberDO = memberMapper.selectOne(queryWrapper);
         if (memberDO == null) {
-            throw new ServiceException("不存在该用户 ！！！");
+            throw new ServiceException("密码或手机号错误");
         }
         UserInfoDTO userInfoDTO = UserInfoDTO.builder()
                 .userId(memberDO.getId().toString())

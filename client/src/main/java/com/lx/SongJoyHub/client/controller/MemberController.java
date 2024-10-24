@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.*;
 /**
  * 会员控制层
  */
-@RestController("/api/client/member")
+@RestController
+@RequestMapping("/api/client/member")
 @RequiredArgsConstructor
 public class MemberController {
 

@@ -16,7 +16,7 @@
         <!--后台管理模块：负责房间 歌曲的管理 -->
         <module>admin</module>
         <module>search</module>
-        <module>player</module>
+        <module>music</module>
     </modules>
 
     <properties>

@@ -12,7 +12,7 @@ public class MemberRegisterReqDTO {
     /**
      * 会员真实姓名
      */
-    private String name;
+    private String realName;
 
     /**
      * 手机号码

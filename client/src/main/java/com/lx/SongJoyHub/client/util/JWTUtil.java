@@ -20,7 +20,7 @@ import java.util.Map;
  */
 @Slf4j
 public final class JWTUtil {
-    private static final long EXPIRATION = 64000L;
+    private static final long EXPIRATION = 6400000L;
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String ISS = "SongJoyHub";
     private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS512);
@@ -48,18 +48,19 @@ public final class JWTUtil {
     }
 
     public static UserInfoDTO parseJwtToken(String jwtToken) {
+        log.info("jwtToken: {}", jwtToken);
         if (StringUtils.hasText(jwtToken)) {
             String actualJwtToken = jwtToken.replace(TOKEN_PREFIX, "");
             try {
-                Claims claims = Jwts.parserBuilder().setSigningKey(SECRET_KEY).build().parseClaimsJws(actualJwtToken).getBody();
+                 Claims claims = Jwts.parserBuilder().setSigningKey(SECRET_KEY).build().parseClaimsJws(actualJwtToken).getBody();
                 Date expiration = claims.getExpiration();
                 if (expiration.after(new Date())) {
                     String subject = claims.getSubject();
                     return JSON.parseObject(subject, UserInfoDTO.class);
                 }
             } catch (ExpiredJwtException ignored) {
-            }
-            catch (Exception e) {
+                log.error("JWT 已过期", ignored);
+            } catch (Exception e) {
                 log.error("JWT Token 解析失败，请检查", e);
             }
         }
