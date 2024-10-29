@@ -1,24 +1,18 @@
-package com.lx.SongJoyHub.client.dao.entity;
+package com.lx.SongJoyHub.client.dto.resp;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.util.Date;
-
+/**
+ * 查看审核情况返回值
+ */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
-@TableName("t_song_review")
-public class SongReviewDO  {
-
-    @TableId(type = IdType.AUTO)
+@NoArgsConstructor
+@AllArgsConstructor
+public class SongReviewRespDTO {
     private Long id;
     /**
      * 提交者id
@@ -60,22 +54,7 @@ public class SongReviewDO  {
     private String notes;
 
     /**
-     * 审核状态
-     */
-    private Integer status;
-
-    /**
      * 类型
      */
     private Integer type;
-    /**
-     * 创建时间
-     */
-    private Date createTime;
-
-    /**
-     * 更新时间
-     */
-    private Date updateTime;
-
 }

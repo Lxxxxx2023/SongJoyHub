@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class SongQueryRespDTO {
-    private Long songId;
+    private String songId;
     /**
      * 歌曲名
      */

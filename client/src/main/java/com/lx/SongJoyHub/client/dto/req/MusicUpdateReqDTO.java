@@ -3,10 +3,14 @@ package com.lx.SongJoyHub.client.dto.req;
 import lombok.Data;
 
 /**
- * 添加音乐请求参数
+ * 歌曲信息更新请求参数
  */
 @Data
-public class MusicCreateReqDTO {
+public class MusicUpdateReqDTO {
+    /**
+     * 主键
+     */
+    private Long songId;
     /**
      * 歌曲名
      */
@@ -41,8 +45,14 @@ public class MusicCreateReqDTO {
      * 歌曲时长
      */
     private String duration;
+
     /**
      * 歌词存放位置
      */
     private String lyric;
+
+    /**
+     * 修改原因
+     */
+    private String cause;
 }

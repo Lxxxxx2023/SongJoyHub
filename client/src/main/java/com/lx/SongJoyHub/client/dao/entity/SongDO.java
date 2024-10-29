@@ -1,7 +1,9 @@
 package com.lx.SongJoyHub.client.dao.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +19,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@TableName("t_song")
 public class SongDO  {
     /**
      * 主键
@@ -41,7 +44,7 @@ public class SongDO  {
     /**
     * 歌曲简介
     */
-    private String desc;
+    private String introduction;
 
     /**
     * 歌曲存放位置
@@ -76,10 +79,10 @@ public class SongDO  {
     /**
     * 歌曲状态 0：在审核 1 可播放
     */
-    private int status;
+    private Integer songStatus;
 
     /**
     * 删除标志
     */
-    private int delFlag;
+    private Integer delFlag;
 }

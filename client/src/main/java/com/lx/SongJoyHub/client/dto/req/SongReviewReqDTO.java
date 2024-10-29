@@ -14,22 +14,17 @@ public class SongReviewReqDTO {
      */
     private Integer id;
     /**
-     * 审批者id
-     */
-    private Long opId;
-
-    /**
-     * 审核状态
-     */
-    private int status;
-
-    /**
      * 备注
      */
     private String notes;
 
     /**
-     * 审批时间
+     * 歌曲具体信息
      */
-    private Date examineTime;
+    private String nowData;
+
+    /**
+     * 审批状态
+     */
+    private Integer status;
 }

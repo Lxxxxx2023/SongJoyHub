@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lx.SongJoyHub.client.dao.mapper.SongMapper">
+
+
+    <update id="updateSong" parameterType="com.lx.SongJoyHub.client.dao.entity.SongDO">
+        update t_song
+        <set>
+            <if test="song.songAddress != null and song.songAddress != ''">
+                song_address = #{song.songAddress},
+            </if>
+            <if test="song.lyric != null and song.lyric != ''">
+                lyric = #{song.lyric},
+            </if>
+            <if test="song.introduction != null and song.introduction != ''">
+                introduction = #{song.introduction},
+            </if>
+            <if test="song.songLanguage != null and song.songLanguage != ''">
+                song_language = #{song.songLanguage},
+            </if>
+            <if test="song.duration != null and song.duration != ''">
+                duration = #{song.duration},
+            </if>
+            <if test="song.singer != null and song.singer != ''">
+                singer = #{song.singer},
+            </if>
+            <if test="song.songName != null and song.songName != ''">
+                song_name = #{song.songName},
+            </if>
+        </set>
+        WHERE song_id = #{song.songId}
+    </update>
+</mapper>
