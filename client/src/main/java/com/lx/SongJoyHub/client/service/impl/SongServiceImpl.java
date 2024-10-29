@@ -2,13 +2,16 @@ package com.lx.SongJoyHub.client.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lx.SongJoyHub.client.common.constant.SystemConstant;
+import com.lx.SongJoyHub.client.common.enums.ChainBizMarkEnum;
 import com.lx.SongJoyHub.client.dao.entity.SongDO;
 import com.lx.SongJoyHub.client.dao.entity.SongReviewDO;
 import com.lx.SongJoyHub.client.dao.mapper.SongMapper;
 import com.lx.SongJoyHub.client.dao.mapper.SongReviewMapper;
 import com.lx.SongJoyHub.client.dto.req.MusicCreateReqDTO;
 import com.lx.SongJoyHub.client.service.SongService;
-import com.lx.SongJoyHub.client.service.basic.chain.MusicAbstractChainHandler;
+import com.lx.SongJoyHub.client.service.basic.chain.AbstractChainHandler;
+import com.lx.SongJoyHub.client.service.basic.chain.ChainHandlerContext;
 import com.lx.SongJoyHub.framework.exception.ServiceException;
 
 import lombok.RequiredArgsConstructor;
@@ -29,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class SongServiceImpl extends ServiceImpl<SongMapper, SongDO> implements SongService {
 
-    private final MusicAbstractChainHandler musicAbstractChainHandler;
+    private final ChainHandlerContext chainHandlerContext;
 
     private final SongMapper songMapper;
 
@@ -50,7 +53,7 @@ public class SongServiceImpl extends ServiceImpl<SongMapper, SongDO> implements 
     @Transactional(rollbackFor = Exception.class)
     public void addMusic(MusicCreateReqDTO requestParam) {
         // 通过责任链检验参数
-        musicAbstractChainHandler.handler(requestParam);
+        chainHandlerContext.handler(ChainBizMarkEnum.MUSIC_CREATE_KEY.name(),requestParam);
         // 插入数据库
         SongDO songDO = null;
         try {

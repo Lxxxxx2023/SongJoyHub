@@ -12,7 +12,7 @@ import java.util.*;
  * 责任链组件上下文
  */
 @Component
-public final class MusicChainHandlerContext<T> implements ApplicationContextAware, CommandLineRunner {
+public final class ChainHandlerContext<T> implements ApplicationContextAware, CommandLineRunner {
     /**
      * 应用上下文
      */
@@ -21,7 +21,7 @@ public final class MusicChainHandlerContext<T> implements ApplicationContextAwar
     /**
      * 责任链组件处理器容器
      */
-    private final Map<String, List<MusicAbstractChainHandler>> abstractChainHandlerContainer = new HashMap<>();
+    private final Map<String, List<AbstractChainHandler>> abstractChainHandlerContainer = new HashMap<>();
 
     /**
      * 责任链处理
@@ -30,22 +30,22 @@ public final class MusicChainHandlerContext<T> implements ApplicationContextAwar
      * @param requestParam 请求参数
      */
     public void handler(String mark, T requestParam) {
-        List<MusicAbstractChainHandler> musicAbstractChainHandlers = abstractChainHandlerContainer.get(mark);
-        if (musicAbstractChainHandlers == null) {
+        List<AbstractChainHandler> abstractChainHandlers = abstractChainHandlerContainer.get(mark);
+        if (abstractChainHandlers == null) {
             throw new RuntimeException(String.format("[%s] 该责任链标识不存在", mark));
         }
-        musicAbstractChainHandlers.forEach(chainFilter -> chainFilter.handler(requestParam));
+        abstractChainHandlers.forEach(chainFilter -> chainFilter.handler(requestParam));
     }
 
     @Override
     public void run(String... args) throws Exception {
 
         // 从Spring上下文中讲使用责任链处理器 获取出来
-        Map<String, MusicAbstractChainHandler> chainFilterMap = applicationContext.getBeansOfType(MusicAbstractChainHandler.class);
+        Map<String, AbstractChainHandler> chainFilterMap = applicationContext.getBeansOfType(AbstractChainHandler.class);
 
         // 分组加入责任链上下文中
         chainFilterMap.forEach((beanName, bean) -> {
-            List<MusicAbstractChainHandler> chainFilterList = abstractChainHandlerContainer.getOrDefault(bean.mark(), new ArrayList<>());
+            List<AbstractChainHandler> chainFilterList = abstractChainHandlerContainer.getOrDefault(bean.mark(), new ArrayList<>());
             chainFilterList.add(bean);
             abstractChainHandlerContainer.put(bean.mark(), chainFilterList);
         });

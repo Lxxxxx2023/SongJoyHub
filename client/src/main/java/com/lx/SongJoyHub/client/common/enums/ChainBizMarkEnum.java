@@ -7,8 +7,11 @@ public enum ChainBizMarkEnum {
     /**
      * 验证歌曲创建参数是否正确
      */
-    MUSIC_CREATE_KEY;
-
+    MUSIC_CREATE_KEY,
+    /**
+     * 校验房间创建是否正确
+     */
+    ROOM_CREATE_KEY;
     @Override
     public String toString() {
         return this.name();

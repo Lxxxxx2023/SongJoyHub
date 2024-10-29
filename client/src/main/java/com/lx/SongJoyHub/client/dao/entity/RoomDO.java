@@ -41,4 +41,8 @@ public class RoomDO {
     */
     private Date updateTime;
 
+    /**
+     * 房间类型
+     */
+    private Integer type;
 }

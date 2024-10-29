@@ -4,7 +4,7 @@ import org.springframework.core.Ordered;
 /**
  * 责任链
  */
-public interface MusicAbstractChainHandler<T> extends Ordered {
+public interface AbstractChainHandler<T> extends Ordered {
     /**
      * 执行处理逻辑
      * @param requestParma 处理实体类

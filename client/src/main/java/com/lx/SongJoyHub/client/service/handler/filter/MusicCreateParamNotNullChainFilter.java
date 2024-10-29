@@ -3,12 +3,12 @@ package com.lx.SongJoyHub.client.service.handler.filter;
 import cn.hutool.core.util.StrUtil;
 import com.lx.SongJoyHub.client.common.enums.ChainBizMarkEnum;
 import com.lx.SongJoyHub.client.dto.req.MusicCreateReqDTO;
-import com.lx.SongJoyHub.client.service.basic.chain.MusicAbstractChainHandler;
+import com.lx.SongJoyHub.client.service.basic.chain.AbstractChainHandler;
 import com.lx.SongJoyHub.framework.exception.ServiceException;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MusicCreateParamNotNullChainFilter implements MusicAbstractChainHandler<MusicCreateReqDTO> {
+public class MusicCreateParamNotNullChainFilter implements AbstractChainHandler<MusicCreateReqDTO> {
 
 
     @Override
