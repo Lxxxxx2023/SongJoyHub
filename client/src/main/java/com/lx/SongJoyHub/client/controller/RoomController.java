@@ -30,53 +30,20 @@ public class RoomController {
     }
 
     /**
-     * 管理员查看房间审核信息
-     */
-    @PostMapping("/query/room-review")
-    public Result<List<RoomQueryReviewRespDTO>> findRoomReview(@RequestBody RoomQueryReviewReqDTO requestParam) {
-        return Results.success(roomService.findRoomReview(requestParam));
-    }
-
-    /**
-     * 管理员审核房间
-     */
-    @PostMapping("/review")
-    public Result<Void> reviewRoom(@RequestBody RoomReviewReqDTO requestParam) {
-        roomService.reviewRoom(requestParam);
-        return Results.success();
-    }
-    /**
-     * 查看房间
-     */
-    @PostMapping("/query/room")
-    public Result<List<RoomQueryAllRespDTO>> findRoom(@RequestBody RoomQueryReqDTO requestParam) {
-        return Results.success(roomService.findRoom(requestParam));
-    }
-
-    /**
      * 修改房间信息
      */
-    @PostMapping("/update/info")
-    public Result<Void> updateRoomInfo(@RequestBody RoomUpdateInfoReqDTO requestParam) {
-        roomService.updateRoomInfo(requestParam);
+    @PostMapping("/update")
+    public Result<Void> updateRoom(@RequestBody RoomUpdateReqDTO requestParam) {
+        roomService.updateRoom(requestParam);
         return Results.success();
     }
 
     /**
-     * 下线房间
+     * 删除房间
      */
-    @PostMapping("/offline}")
-    public Result<Void> offLineRoom(@RequestBody RoomOffLineReqDTO requestParam) {
-        roomService.offLineRoom(requestParam);
-        return Results.success();
-    }
-
-    /**
-     * 上线房间
-     */
-    @PostMapping("/onLine")
-    public Result<Void> onLineRoom(@RequestBody RoomOnLineReqDTO requestParam) {
-        roomService.onLineRoom(requestParam);
+    @PostMapping("/delete")
+    public Result<Void> deleteRoom(@RequestBody RoomDeleteReqDTO requestParam) {
+        roomService.deleteRoom(requestParam);
         return Results.success();
     }
     /**
@@ -87,4 +54,5 @@ public class RoomController {
         roomService.reservationRoom(requestParam);
         return Results.success();
     }
+    //TODO 取消预约
 }

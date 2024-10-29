@@ -29,6 +29,9 @@
             <if test="song.songName != null and song.songName != ''">
                 song_name = #{song.songName},
             </if>
+            <if test="song.category != null and song.category != ''">
+                song.category = #{song.category}
+            </if>
         </set>
         WHERE song_id = #{song.songId}
     </update>

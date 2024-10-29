@@ -26,39 +26,14 @@ public interface RoomService extends IService<RoomDO>{
     void reservationRoom(RoomReservationReqDTO requestParam);
 
     /**
-     * 查找所有房间
-     * @return 所有房间信息
-     */
-    List<RoomQueryAllRespDTO> findRoom(RoomQueryReqDTO requestParam);
-
-    /**
      * 修改房间信息
      * @param requestParam 修改房间请求参数
      */
-    void updateRoomInfo(RoomUpdateInfoReqDTO requestParam);
+    void updateRoom(RoomUpdateReqDTO requestParam);
 
     /**
-     * 下线房间
-     * @param requestParam 房间id
+     * 删除房间信息
+     * @param requestParam 删除房间信息请求参数
      */
-    void offLineRoom(RoomOffLineReqDTO requestParam);
-
-    /**
-     * 上线房间
-     * @param requestParam 上线房间请求参数
-     */
-    void onLineRoom(RoomOnLineReqDTO requestParam);
-
-    /**
-     * 查询审核信息
-     * @param requestParam 查询审核信息请求参数
-     * @return 房间审核信息返回实体
-     */
-    List<RoomQueryReviewRespDTO> findRoomReview(RoomQueryReviewReqDTO requestParam);
-
-    /**
-     * 管理员审核房间
-     * @param requestParam 审核房间请求参数
-     */
-    void reviewRoom(RoomReviewReqDTO requestParam);
+    void deleteRoom(RoomDeleteReqDTO requestParam);
 }

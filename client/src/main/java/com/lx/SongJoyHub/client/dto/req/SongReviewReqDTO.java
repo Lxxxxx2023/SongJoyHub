@@ -19,11 +19,6 @@ public class SongReviewReqDTO {
     private String notes;
 
     /**
-     * 歌曲具体信息
-     */
-    private String nowData;
-
-    /**
      * 审批状态
      */
     private Integer status;

@@ -3,6 +3,7 @@ package com.lx.SongJoyHub.client.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -11,12 +12,15 @@ import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.lx.SongJoyHub.client.common.constant.RedisConstant;
 import com.lx.SongJoyHub.client.common.context.UserContext;
 import com.lx.SongJoyHub.client.common.enums.ChainBizMarkEnum;
+import com.lx.SongJoyHub.client.common.enums.ReviewTypeEnum;
 import com.lx.SongJoyHub.client.dao.entity.RoomDO;
 import com.lx.SongJoyHub.client.dao.entity.RoomReservationDO;
 import com.lx.SongJoyHub.client.dao.entity.RoomReviewDO;
+import com.lx.SongJoyHub.client.dao.entity.SongDO;
 import com.lx.SongJoyHub.client.dao.mapper.RoomMapper;
 import com.lx.SongJoyHub.client.dao.mapper.RoomReservationMapper;
 import com.lx.SongJoyHub.client.dao.mapper.RoomReviewMapper;
+import com.lx.SongJoyHub.client.dao.mapper.SongMapper;
 import com.lx.SongJoyHub.client.dto.req.*;
 import com.lx.SongJoyHub.client.dto.resp.RoomQueryAllRespDTO;
 import com.lx.SongJoyHub.client.dto.resp.RoomQueryReviewRespDTO;
@@ -25,11 +29,11 @@ import com.lx.SongJoyHub.client.service.basic.chain.ChainHandlerContext;
 import com.lx.SongJoyHub.framework.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.*;
 
 /**
@@ -49,6 +53,7 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, RoomDO> implements 
     private final StringRedisTemplate stringRedisTemplate;
 
     private final RoomReviewMapper roomReviewMapper;
+    private final SongMapper songMapper;
 
     @Override
     public void createRoom(RoomCreateReqDTO requestParam) {
@@ -56,12 +61,54 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, RoomDO> implements 
         chainHandlerContext.handler(ChainBizMarkEnum.ROOM_CREATE_KEY.name(), requestParam);
         RoomDO roomDO = BeanUtil.toBean(requestParam, RoomDO.class);
 
-        // 插入数据库
-        try {
-            roomMapper.insert(roomDO);
-        } catch (DuplicateKeyException e) {
-            log.error("房间名不能重复");
+        // 创建审核任务
+        String roomJson = JSON.toJSONString(roomDO);
+        RoomReviewDO roomReviewDO = RoomReviewDO.builder()
+                .cause("新建房间")
+                .committerId(Long.valueOf(UserContext.getUserId()))
+                .committerName(UserContext.getUser().getUserName())
+                .nowData(roomJson)
+                .type(ReviewTypeEnum.INSERT.getCode())
+                .build();
+        roomReviewMapper.insert(roomReviewDO);
+    }
+
+    @Override
+    public void updateRoom(RoomUpdateReqDTO requestParam) {
+        // 创建审核任务
+        SongDO songDO = songMapper.selectById(requestParam.getRoomId());
+        if(songDO == null) {
+            throw new ServiceException("该房间不存在 无法进行修改！");
         }
+        RoomReviewDO roomReviewDO = RoomReviewDO.builder()
+                .committerId(Long.valueOf(UserContext.getUserId()))
+                .committerName(UserContext.getUser().getUserName())
+                .nowData(JSON.toJSONString(requestParam))
+                .originalData(JSON.toJSONString(songDO))
+                .cause(requestParam.getCause())
+                .type(ReviewTypeEnum.UPDATE.getCode())
+                .build();
+        roomReviewMapper.insert(roomReviewDO);
+    }
+
+    @Override
+    public void deleteRoom(RoomDeleteReqDTO requestParam) {
+        // 创建审核任务
+        RoomDO roomDO = roomMapper.selectById(requestParam.getRoomId());
+        if(roomDO == null) {
+            throw new ServiceException("该房间不存在 无法进行删除！");
+        }
+        RoomDO oldSongDO = BeanUtil.copyProperties(roomDO, RoomDO.class);
+        roomDO.setRoomStatus(3); //删除
+        RoomReviewDO roomReviewDO = RoomReviewDO.builder()
+                .committerId(Long.valueOf(UserContext.getUserId()))
+                .committerName(UserContext.getUser().getUserName())
+                .nowData(JSON.toJSONString(roomDO))
+                .originalData(JSON.toJSONString(oldSongDO))
+                .cause(requestParam.getCause())
+                .type(ReviewTypeEnum.DELETE.getCode())
+                .build();
+        roomReviewMapper.insert(roomReviewDO);
     }
 
     @Override
@@ -95,98 +142,5 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, RoomDO> implements 
                 "redis.call('ZADD',KEYS[1],ARGV[3],ARGV[4])" +
                 "redis.call('EXIREAT',KEYS[1],ARGV[5])";
         stringRedisTemplate.execute(new DefaultRedisScript<>(luaScript, Long.class), strings, times.toArray());
-    }
-
-    @Override
-    public List<RoomQueryAllRespDTO> findRoom(RoomQueryReqDTO requestParam) {
-        // TODO 检验用户不能访问未上线的房间或在维修的房间
-        LambdaQueryWrapper<RoomDO> queryWrapper = Wrappers.lambdaQuery(RoomDO.class)
-                .like(RoomDO::getRoomName, "%" + requestParam.getRoomName() + "%")
-                .eq(RoomDO::getStatus, requestParam.getStatus())
-                .eq(RoomDO::getType, requestParam.getType())
-                .le(RoomDO::getPrice, requestParam.getMaxPrice())
-                .gt(RoomDO::getPrice, requestParam.getMinPrice());
-        List<RoomDO> roomDOS = roomMapper.selectList(queryWrapper);
-        return roomDOS.stream().map(roomDO -> BeanUtil.toBean(roomDO, RoomQueryAllRespDTO.class)).toList();
-    }
-
-    @Override
-    public void updateRoomInfo(RoomUpdateInfoReqDTO requestParam) {
-        LambdaUpdateWrapper<RoomDO> updateWrapper = Wrappers.lambdaUpdate(RoomDO.class)
-                .eq(RoomDO::getRoomId, requestParam.getRoomId());
-        RoomDO roomDO = roomMapper.selectById(requestParam.getRoomId());
-        if(roomDO == null) {
-            throw new ServiceException("该房间不存在 恶意请求");
-        }
-        RoomDO newRoom = BeanUtil.toBean(requestParam, RoomDO.class);
-        int update = roomMapper.update(newRoom, updateWrapper);
-        if(!SqlHelper.retBool(update)) {
-            throw new ServiceException("房间信息更新失败");
-        }
-    }
-
-    @Override
-    public void offLineRoom(RoomOffLineReqDTO requestParam) {
-        RoomDO roomDO = roomMapper.selectById(requestParam.getRoomId());
-        if(roomDO == null) {
-            throw new ServiceException("该房间下线失败：不存在该房间" + requestParam.getRoomId());
-        }
-        roomDO.setStatus(2);
-        roomMapper.updateById(roomDO);
-        // TODO 同时我们还需要记录这次是谁操作了
-        // TODO 需要将预约了该房间的所以所有操作复原
-
-    }
-
-    @Override
-    public void onLineRoom(RoomOnLineReqDTO requestParam) {
-        LambdaUpdateWrapper<RoomDO> updateWrapper = Wrappers.lambdaUpdate(RoomDO.class)
-                .set(RoomDO::getStatus,0)
-                .eq(RoomDO::getRoomId, requestParam.getRoomId());
-        int update = roomMapper.update(updateWrapper);
-        if(!SqlHelper.retBool(update)) {
-            throw new ServiceException("上线房间失败，请检查房间号");
-        }
-        // TODO 记录操作日志
-        // TODO 要重构缓存吗？
-    }
-
-    @Override
-    public List<RoomQueryReviewRespDTO> findRoomReview(RoomQueryReviewReqDTO requestParam) {
-        LambdaQueryWrapper<RoomReviewDO> queryWrapper = Wrappers.lambdaQuery(RoomReviewDO.class)
-                .eq(RoomReviewDO::getRoomId, requestParam.getRoomId())
-                .eq(RoomReviewDO::getStatus,requestParam.getStatus())
-                .eq(RoomReviewDO::getOpId, requestParam.getOpId())
-                .eq(RoomReviewDO::getType, requestParam.getType())
-                .eq(RoomReviewDO::getSubmitterId, requestParam.getSubmitterId())
-                .le(RoomReviewDO::getSubmitterName,requestParam.getMaxSubmitterTime())
-                .ge(RoomReviewDO::getSubmitterTime,requestParam.getMinSubmitterTime())
-                .le(RoomReviewDO::getSubmitterTime,requestParam.getMaxSubmitterTime())
-                .ge(RoomReviewDO::getSubmitterTime,requestParam.getMinSubmitterTime());
-
-        List<RoomReviewDO> roomReviewDOS = roomReviewMapper.selectList(queryWrapper);
-        return roomReviewDOS.stream().map(roomReviewDO ->
-                BeanUtil.toBean(roomReviewDO, RoomQueryReviewRespDTO.class)).toList();
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void reviewRoom(RoomReviewReqDTO requestParam) {
-
-        LambdaUpdateWrapper<RoomReviewDO> updateWrapper = Wrappers.lambdaUpdate(RoomReviewDO.class)
-                .eq(RoomReviewDO::getId, requestParam.getId())
-                .set(RoomReviewDO::getOpId, UserContext.getUserId())
-                .set(RoomReviewDO::getNotes,requestParam.getNotes())
-                .set(RoomReviewDO::getStatus,requestParam.getStatus());
-        roomReviewMapper.update(updateWrapper);
-
-        if(requestParam.getStatus() != 1) return;
-        LambdaUpdateWrapper<RoomDO> roomWrapper = Wrappers.lambdaUpdate(RoomDO.class)
-                .eq(RoomDO::getRoomId, requestParam.getRoomId())
-                .set(RoomDO::getStatus,requestParam.getStatus());
-        roomMapper.update(roomWrapper);
-
-        // TODO 要引入缓存吗？
-
     }
 }

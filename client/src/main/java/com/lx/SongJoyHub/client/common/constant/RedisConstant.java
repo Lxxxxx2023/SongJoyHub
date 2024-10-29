@@ -10,6 +10,10 @@ public final class RedisConstant {
     public static final String SONG_KEY = "song:%s";
 
     /**
+     * 房间信息缓存key
+     */
+    public static final String ROOM_KEY = "room:%s";
+    /**
      *
      */
     public static final String ROOM_RESERVATION_KEY = "song:name:%s";

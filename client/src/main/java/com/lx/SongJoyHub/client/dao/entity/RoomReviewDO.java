@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Date;
 
 
@@ -15,56 +16,68 @@ import java.util.Date;
 @NoArgsConstructor
 @Builder
 public class RoomReviewDO {
-    /**
-     * 主键id
-     */
+
+
     @TableId(type = IdType.AUTO)
     private Long id;
     /**
-    * 提交者id
-    */
-    private Long submitterId;
-    /**
-     * 提交者名称
+     * 提交者id
      */
-    private String submitterName;
+    private Long committerId;
+
     /**
-    * 审核者id
-    */
+     * 提交者名
+     */
+    private String committerName;
+
+    /**
+     * 处理者id
+     */
     private Long opId;
 
     /**
-    * 房间id
-    */
-    private Long roomId;
+     * 处理者名
+     */
+    private String opName;
 
     /**
-    * 修改理由
-    */
+     * 原因
+     */
     private String cause;
 
     /**
-    * 审核状态
-    */
-    private int status;
+     * 修改前房间信息
+     */
+    private String originalData;
 
     /**
-    * 备注
-    */
+     * 歌曲房间信息
+     */
+    private String nowData;
+
+    /**
+     * 备注
+     */
     private String notes;
 
     /**
-    * 提交时间
-    */
-    private Date submitterTime;
+     * 审核状态
+     */
+    private int status;
 
     /**
-    * 审核时间
-    */
-    private Date examineTime;
-
-    /**
-    * 房间审核类型
-    */
+     * 事件类型
+     */
     private int type;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
+
 }

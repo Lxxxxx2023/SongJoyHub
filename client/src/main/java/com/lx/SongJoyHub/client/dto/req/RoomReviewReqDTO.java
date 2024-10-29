@@ -15,17 +15,13 @@ public class RoomReviewReqDTO {
     private Long id;
 
     /**
-     * 房间id
-     */
-    private Long roomId;
-
-    /**
-     * 审核状态
-     */
-    private int status;
-
-    /**
      * 备注
      */
     private String notes;
+
+
+    /**
+     * 审批状态
+     */
+    private Integer status;
 }

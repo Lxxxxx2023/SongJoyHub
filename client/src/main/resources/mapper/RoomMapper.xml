@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lx.SongJoyHub.client.dao.mapper.RoomMapper">
+
+    <update id="updateRoom" parameterType="com.lx.SongJoyHub.client.dao.entity.RoomDO">
+        update t_room <set>
+        <if test="room.roomName != null and room.roomName != ''">
+            room_name = #{room.roomName}
+        </if>
+        <if test="room.roomType != null and room.roomType != '' ">
+            room_type = #{room.roomType}
+        </if>
+        <if test="room.price != null and room.price > 0">
+            price = #{room.price}
+        </if>
+        <if test="room.introduction != null and room.introduction != '' ">
+            introduction = #{room.introduction}
+        </if>
+
+        where room_id = #{room.roomId}
+    </set>
+    </update>
+</mapper>

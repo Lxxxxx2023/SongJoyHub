@@ -76,9 +76,18 @@ public class SongServiceImpl extends ServiceImpl<SongMapper, SongDO> implements 
                 .songId(requestParam.getSongId())
                 .delFlag(1)
                 .build();
+        LambdaQueryWrapper<SongDO> queryWrapper = Wrappers.lambdaQuery(SongDO.class)
+                .eq(SongDO::getSongId, requestParam.getSongId())
+                .eq(SongDO::getDelFlag, 0)
+                .eq(SongDO::getSongStatus,1);
+        SongDO oldSongDO = songMapper.selectOne(queryWrapper);
+        if (oldSongDO == null) {
+            throw new ServiceException("该歌曲不存在，无法删除");
+        }
         SongReviewDO songReviewDO = SongReviewDO.builder()
                 .committerId(Long.valueOf(UserContext.getUserId()))
                 .committerName(UserContext.getUser().getUserName())
+                .originalData(JSON.toJSONString(oldSongDO))
                 .nowData(JSON.toJSONString(songDO))
                 .cause(requestParam.getCause())
                 .type(ReviewTypeEnum.DELETE.getCode())

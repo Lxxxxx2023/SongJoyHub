@@ -24,12 +24,17 @@ public class RoomDO {
     /**
     * 房间状态 0：未使用 1：正在使用 2：在维修 3：其他
     */
-    private Integer status;
+    private Integer roomStatus;
 
     /**
     * 房间介绍
     */
-    private String desc;
+    private String introduction;
+
+    /**
+     * 房间类型
+     */
+    private String roomType;
 
     /**
     * 创建时间
@@ -40,9 +45,4 @@ public class RoomDO {
     * 更新时间
     */
     private Date updateTime;
-
-    /**
-     * 房间类型
-     */
-    private Integer type;
 }

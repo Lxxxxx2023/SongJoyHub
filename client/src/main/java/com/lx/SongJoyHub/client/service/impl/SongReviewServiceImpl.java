@@ -68,7 +68,8 @@ public class SongReviewServiceImpl extends ServiceImpl<SongReviewMapper, SongRev
         }
         if(requestParam.getStatus() != 1) return;
         // 审核通过 歌曲入库
-        SongDO songDO = JSON.parseObject(requestParam.getNowData(), SongDO.class);
+        SongReviewDO songReviewDO = songReviewMapper.selectById(requestParam.getId());
+        SongDO songDO = JSON.parseObject(songReviewDO.getNowData(), SongDO.class);
         songDO.setSongStatus(1);
         try{
             songMapper.insert(songDO);
@@ -93,7 +94,8 @@ public class SongReviewServiceImpl extends ServiceImpl<SongReviewMapper, SongRev
             throw new ServiceException("审批删除歌曲失败 id: " + requestParam.getId());
         }
         if(requestParam.getStatus() != 1) return;
-        SongDO songDO = JSON.parseObject(requestParam.getNowData(), SongDO.class);
+        SongReviewDO songReviewDO = songReviewMapper.selectById(requestParam.getId());
+        SongDO songDO = JSON.parseObject(songReviewDO.getNowData(), SongDO.class);
         LambdaUpdateWrapper<SongDO> updateWrapperSong = Wrappers.lambdaUpdate(SongDO.class)
                 .eq(SongDO::getSongId, songDO.getSongId())
                 .set(SongDO::getDelFlag,1); // 标记为删除
@@ -114,7 +116,8 @@ public class SongReviewServiceImpl extends ServiceImpl<SongReviewMapper, SongRev
             throw new ServiceException("审批修改歌曲失败 id: " + requestParam.getId());
         }
         if(requestParam.getStatus() != 1) return;
-        SongDO songDO = JSON.parseObject(requestParam.getNowData(), SongDO.class);
+        SongReviewDO songReviewDO = songReviewMapper.selectById(requestParam.getId());
+        SongDO songDO = JSON.parseObject(songReviewDO.getNowData(), SongDO.class);
         int updateSong = songMapper.updateSong(songDO);
         if(!SqlHelper.retBool(updateSong)) {
             throw new ServiceException("审核歌曲修改 id: " + requestParam.getId());

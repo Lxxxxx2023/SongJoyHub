@@ -56,5 +56,5 @@ public class RoomReservationDO  {
     /**
     * 是否有效
     */
-    private int status;
+    private Integer status;
 }
