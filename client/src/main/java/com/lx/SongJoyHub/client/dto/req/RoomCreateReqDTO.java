@@ -22,10 +22,10 @@ public class RoomCreateReqDTO {
     /**
      * 房间介绍
      */
-    private String desc;
+    private String introduction;
 
     /**
      * 房间类型
      */
-    private Integer type;
+    private Integer roomType;
 }

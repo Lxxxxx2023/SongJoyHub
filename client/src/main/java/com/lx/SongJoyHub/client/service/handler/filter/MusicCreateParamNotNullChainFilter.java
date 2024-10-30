@@ -13,22 +13,22 @@ public class MusicCreateParamNotNullChainFilter implements AbstractChainHandler<
 
     @Override
     public void handler(MusicCreateReqDTO requestParam) {
-        if(StrUtil.isEmpty(requestParam.getSongName())) {
+        if(StrUtil.isEmpty(requestParam.getSongName()) || requestParam.getSongName() == null) {
             throw new ServiceException("歌曲名不能为空");
         }
-        if(StrUtil.isEmpty(requestParam.getSinger())) {
+        if(StrUtil.isEmpty(requestParam.getSinger()) || requestParam.getSinger() == null) {
             throw new ServiceException("演出者不能为空");
         }
-        if(StrUtil.isEmpty(requestParam.getSongLanguage())) {
+        if(StrUtil.isEmpty(requestParam.getSongLanguage()) || requestParam.getSongLanguage() == null) {
             throw new ServiceException("歌曲语种不能为空");
         }
-        if(StrUtil.isEmpty(requestParam.getSongAddress())) {
+        if(StrUtil.isEmpty(requestParam.getSongAddress()) || requestParam.getSongAddress() == null) {
             throw new ServiceException("歌曲存放位置不能为空");
         }
-        if(StrUtil.isEmpty(requestParam.getLyric())) {
+        if(StrUtil.isEmpty(requestParam.getLyric()) || requestParam.getLyric() == null) {
             throw new ServiceException("歌词存放位置不能为空");
         }
-        if(StrUtil.isEmpty(requestParam.getCategory())) {
+        if(StrUtil.isEmpty(requestParam.getCategory()) || requestParam.getCategory() == null) {
             throw new ServiceException("分类不能为空");
         }
     }

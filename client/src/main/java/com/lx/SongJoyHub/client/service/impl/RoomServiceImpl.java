@@ -4,11 +4,8 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.lx.SongJoyHub.client.common.constant.RedisConstant;
 import com.lx.SongJoyHub.client.common.context.UserContext;
 import com.lx.SongJoyHub.client.common.enums.ChainBizMarkEnum;
@@ -22,8 +19,6 @@ import com.lx.SongJoyHub.client.dao.mapper.RoomReservationMapper;
 import com.lx.SongJoyHub.client.dao.mapper.RoomReviewMapper;
 import com.lx.SongJoyHub.client.dao.mapper.SongMapper;
 import com.lx.SongJoyHub.client.dto.req.*;
-import com.lx.SongJoyHub.client.dto.resp.RoomQueryAllRespDTO;
-import com.lx.SongJoyHub.client.dto.resp.RoomQueryReviewRespDTO;
 import com.lx.SongJoyHub.client.service.RoomService;
 import com.lx.SongJoyHub.client.service.basic.chain.ChainHandlerContext;
 import com.lx.SongJoyHub.framework.exception.ServiceException;
@@ -32,8 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.*;
 
 /**
@@ -60,13 +53,14 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, RoomDO> implements 
         // 校验参数
         chainHandlerContext.handler(ChainBizMarkEnum.ROOM_CREATE_KEY.name(), requestParam);
         RoomDO roomDO = BeanUtil.toBean(requestParam, RoomDO.class);
-
         // 创建审核任务
-        String roomJson = JSON.toJSONString(roomDO);
+        String roomJson = JSON.toJSONString(roomDO, SerializerFeature.WriteNonStringValueAsString);
         RoomReviewDO roomReviewDO = RoomReviewDO.builder()
                 .cause("新建房间")
-                .committerId(Long.valueOf(UserContext.getUserId()))
-                .committerName(UserContext.getUser().getUserName())
+//                .committerId(Long.valueOf(UserContext.getUserId()))
+//                .committerName(UserContext.getUser().getUserName())
+                .committerName("lx")
+                .committerId(1L)
                 .nowData(roomJson)
                 .type(ReviewTypeEnum.INSERT.getCode())
                 .build();
@@ -76,15 +70,17 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, RoomDO> implements 
     @Override
     public void updateRoom(RoomUpdateReqDTO requestParam) {
         // 创建审核任务
-        SongDO songDO = songMapper.selectById(requestParam.getRoomId());
-        if(songDO == null) {
+        RoomDO roomDO = roomMapper.selectById(requestParam.getRoomId());
+        if (roomDO == null) {
             throw new ServiceException("该房间不存在 无法进行修改！");
         }
         RoomReviewDO roomReviewDO = RoomReviewDO.builder()
-                .committerId(Long.valueOf(UserContext.getUserId()))
-                .committerName(UserContext.getUser().getUserName())
-                .nowData(JSON.toJSONString(requestParam))
-                .originalData(JSON.toJSONString(songDO))
+                //                .committerId(Long.valueOf(UserContext.getUserId()))
+//                .committerName(UserContext.getUser().getUserName())
+                .committerName("lx")
+                .committerId(1L)
+                .nowData(JSON.toJSONString((BeanUtil.toBean(requestParam,RoomDO.class)),SerializerFeature.WriteNonStringValueAsString))
+                .originalData(JSON.toJSONString(roomDO,SerializerFeature.WriteNonStringValueAsString))
                 .cause(requestParam.getCause())
                 .type(ReviewTypeEnum.UPDATE.getCode())
                 .build();
@@ -95,16 +91,18 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, RoomDO> implements 
     public void deleteRoom(RoomDeleteReqDTO requestParam) {
         // 创建审核任务
         RoomDO roomDO = roomMapper.selectById(requestParam.getRoomId());
-        if(roomDO == null) {
+        if (roomDO == null) {
             throw new ServiceException("该房间不存在 无法进行删除！");
         }
         RoomDO oldSongDO = BeanUtil.copyProperties(roomDO, RoomDO.class);
         roomDO.setRoomStatus(3); //删除
         RoomReviewDO roomReviewDO = RoomReviewDO.builder()
-                .committerId(Long.valueOf(UserContext.getUserId()))
-                .committerName(UserContext.getUser().getUserName())
-                .nowData(JSON.toJSONString(roomDO))
-                .originalData(JSON.toJSONString(oldSongDO))
+//                .committerId(Long.valueOf(UserContext.getUserId()))
+//                .committerName(UserContext.getUser().getUserName())
+                .committerName("lx")
+                .committerId(1L)
+                .nowData(JSON.toJSONString(roomDO,SerializerFeature.WriteNonStringValueAsString))
+                .originalData(JSON.toJSONString(oldSongDO,SerializerFeature.WriteNonStringValueAsString))
                 .cause(requestParam.getCause())
                 .type(ReviewTypeEnum.DELETE.getCode())
                 .build();

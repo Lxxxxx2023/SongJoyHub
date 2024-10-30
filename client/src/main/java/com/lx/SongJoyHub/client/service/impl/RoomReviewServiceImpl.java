@@ -2,7 +2,7 @@ package com.lx.SongJoyHub.client.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson2.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -56,7 +56,7 @@ public class RoomReviewServiceImpl extends ServiceImpl<RoomReviewMapper, RoomRev
         if(requestParam.getStatus() != 1) return;
         // 新建房间信息
         RoomReviewDO roomReviewDO = roomReviewMapper.selectById(requestParam.getId());
-        RoomDO roomDO = JSON.parseObject(JSON.toJSONString(roomReviewDO.getNowData()), RoomDO.class);
+        RoomDO roomDO = getRoomDO(roomReviewDO);
         try{
             roomMapper.insert(roomDO);
         }catch (DuplicateKeyException e) {
@@ -64,6 +64,17 @@ public class RoomReviewServiceImpl extends ServiceImpl<RoomReviewMapper, RoomRev
         }
         // 创建缓存
         refactorRoomCache(roomDO);
+    }
+
+    private static RoomDO getRoomDO(RoomReviewDO roomReviewDO) {
+        JSONObject jsonObject = JSON.parseObject(roomReviewDO.getNowData());
+        return RoomDO.builder()
+                .price(jsonObject.getBigDecimal("price"))
+                .roomId(Long.valueOf(jsonObject.getString("roomId")))
+                .roomType(jsonObject.getString("roomType"))
+                .roomName(jsonObject.getString("roomName"))
+                .introduction(jsonObject.getString("introduction"))
+                .build();
     }
 
     @Override
@@ -79,7 +90,7 @@ public class RoomReviewServiceImpl extends ServiceImpl<RoomReviewMapper, RoomRev
         }
         if(requestParam.getStatus() != 1) return;
         RoomReviewDO roomReviewDO = roomReviewMapper.selectById(requestParam.getId());
-        RoomDO roomDO = JSON.parseObject(roomReviewDO.getNowData(), RoomDO.class);
+        RoomDO roomDO = getRoomDO(roomReviewDO);
         int i = roomMapper.updateRoom(roomDO);
         if(!SqlHelper.retBool(i)){
             throw new ServiceException("审核更新房间失败");
@@ -102,11 +113,11 @@ public class RoomReviewServiceImpl extends ServiceImpl<RoomReviewMapper, RoomRev
         }
         if(requestParam.getStatus() != 1) return;
         RoomReviewDO roomReviewDO = roomReviewMapper.selectById(requestParam.getId());
-        RoomDO roomDO = JSON.parseObject(roomReviewDO.getNowData(), RoomDO.class);
+        RoomDO roomDO = getRoomDO(roomReviewDO);
         LambdaUpdateWrapper<RoomDO> deleteWrapper = Wrappers.lambdaUpdate(RoomDO.class)
                 .eq(RoomDO::getRoomId,roomDO.getRoomId())
                 .set(RoomDO::getRoomStatus,3); // 设为删除状态
-        int i = roomMapper.updateRoom(roomDO);
+        int i = roomMapper.update(deleteWrapper);
         if(!SqlHelper.retBool(i)){
             throw new ServiceException("审核删除房间失败");
         }

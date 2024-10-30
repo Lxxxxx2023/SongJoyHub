@@ -1,14 +1,11 @@
 package com.lx.SongJoyHub.client.controller;
 
 import com.lx.SongJoyHub.client.dto.req.*;
-import com.lx.SongJoyHub.client.dto.resp.RoomQueryAllRespDTO;
-import com.lx.SongJoyHub.client.dto.resp.RoomQueryReviewRespDTO;
 import com.lx.SongJoyHub.client.service.RoomService;
 import com.lx.SongJoyHub.framework.result.Result;
 import com.lx.SongJoyHub.framework.web.Results;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 /**
  * 房间控制层

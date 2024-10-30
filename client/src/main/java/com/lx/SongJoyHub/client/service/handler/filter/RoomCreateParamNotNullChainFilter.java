@@ -14,16 +14,16 @@ import org.springframework.stereotype.Component;
 public class RoomCreateParamNotNullChainFilter implements AbstractChainHandler<RoomCreateReqDTO> {
     @Override
     public void handler(RoomCreateReqDTO requestParma) {
-        if(requestParma.getType() != null) {
+        if(requestParma.getRoomType() == null) {
             throw new ServiceException("房间类型不能为空");
         }
-        if(StrUtil.isEmpty(requestParma.getDesc())) {
+        if(StrUtil.isEmpty(requestParma.getIntroduction()) || requestParma.getIntroduction() == null) {
             throw new ServiceException("房间简介不能为空");
         }
-        if(requestParma.getPrice() != null) {
+        if(requestParma.getPrice() == null) {
             throw new ServiceException("房间价格不能为空");
         }
-        if(StrUtil.isEmpty(requestParma.getRoomName())) {
+        if(StrUtil.isEmpty(requestParma.getRoomName()) || requestParma.getRoomName() == null) {
             throw new ServiceException("房间名不能为空");
         }
     }
