@@ -17,17 +17,15 @@ import com.lx.SongJoyHub.client.dto.req.SongReviewReqDTO;
 import com.lx.SongJoyHub.client.dto.resp.SongQueryRespDTO;
 import com.lx.SongJoyHub.client.dto.resp.SongReviewRespDTO;
 import com.lx.SongJoyHub.client.service.SongReviewService;
+import com.lx.SongJoyHub.client.util.RedisUtil;
 import com.lx.SongJoyHub.framework.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -131,20 +129,10 @@ public class SongReviewServiceImpl extends ServiceImpl<SongReviewMapper, SongRev
         //存入缓存中
         SongQueryRespDTO songQueryRespDTO = BeanUtil.toBean(songDO, SongQueryRespDTO.class);
         Map<String, Object> cacheTargetMap = BeanUtil.beanToMap(songQueryRespDTO, false, true);
-        Map<String, String> actualCacheTargetMap = cacheTargetMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
-                entry -> entry.getValue() != null ? entry.getValue().toString() : ""));
-
-        String songCacheKey = String.format(RedisConstant.SONG_KEY, songDO.getSongId());
-        String luaScript = "redis.call('HMSET',KEYS[1],unpack(ARGV, 1, #ARGV - 1))" +
-                "redis.call('EXPIREAT',KEYS[1],ARGV[#ARGV])";
-        List<String> keys = Collections.singletonList(songCacheKey);
-        List<String> args = new ArrayList<>(actualCacheTargetMap.size() * 2 + 1);
-        actualCacheTargetMap.forEach((k, v) -> {
-            args.add(k);
-            args.add(v);
-        });
-        args.add(String.valueOf(Instant.now().getEpochSecond() + 100000));
-        //执行lua脚本
-        stringRedisTemplate.execute(new DefaultRedisScript<>(luaScript, Long.class), keys, args.toArray());
+        RedisUtil.convertHash(String.format(RedisConstant.SONG_KEY,songDO.getSongId())
+                ,stringRedisTemplate
+                ,cacheTargetMap
+                ,String.valueOf(Instant.now().getEpochSecond() + 100000)
+        );
     }
 }

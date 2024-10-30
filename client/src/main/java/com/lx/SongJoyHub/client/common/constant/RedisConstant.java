@@ -13,6 +13,15 @@ public final class RedisConstant {
      * 房间信息缓存key
      */
     public static final String ROOM_KEY = "room:%s";
+
+    /**
+     * 活动信息缓存key
+     */
+    public static final String ACTIVITY_KEY = "activity:%s";
+    /**
+     *
+     */
+    public static final String CAN_PARTAKE_KEY = "activity:can-partake:%s";
     /**
      *
      */

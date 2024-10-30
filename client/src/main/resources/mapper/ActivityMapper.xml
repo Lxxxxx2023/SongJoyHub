@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lx.SongJoyHub.client.dao.mapper.ActivityMapper">
+    <resultMap id="activityMap" type="com.lx.SongJoyHub.client.dao.entity.ActivityDO">
+        <id column="activity_id" property="activityId"/>
+        <result column="active_name" property="activeName"/>
+        <result column="receive_rule" property="receiveRule"/>
+        <result column="reward_content" property="rewardContent"/>
+        <result column="valid_start_time" property="validStartTime"/>
+        <result column="valid_end_time" property="validEndTime"/>
+        <result column="activity_status" property="activityStatus"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+    <select id="pageQueryActivity" resultMap="activityMap"
+            parameterType="com.lx.SongJoyHub.client.dto.req.ActivityPageQueryReqDTO">
+        select * from t_activity
+        <where>
+            <if test="requestParam.activityId != null">
+                activity_id = #{requestParam.activityId}
+            </if>
+            <if test="requestParam.activeName != null and requestParam.activeName!=''">
+                active_name = #{requestParam.activeName}
+            </if>
+            <if test="requestParam.activityStatus != null ">
+                activity_status = #{requestParam.activityStatus}
+            </if>
+            <if test="requestParam.validStartTime != null">
+                create_time ge #{requestParam.validStartTime}
+            </if>
+            <if test="requestParam.validEndTime != null">
+                create_time le #{requestParam.validEndTime}
+            </if>
+        </where>
+        limit #{requestParam.pageSize} offset #{requestParam.pageNo}
+    </select>
+</mapper>

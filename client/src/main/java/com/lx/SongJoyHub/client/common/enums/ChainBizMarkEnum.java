@@ -11,7 +11,12 @@ public enum ChainBizMarkEnum {
     /**
      * 校验房间创建是否正确
      */
-    ROOM_CREATE_KEY;
+    ROOM_CREATE_KEY,
+
+    /**
+     * 校验活动创建参数是否正确
+     */
+    ACTIVITY_CREATE_KEY;
     @Override
     public String toString() {
         return this.name();

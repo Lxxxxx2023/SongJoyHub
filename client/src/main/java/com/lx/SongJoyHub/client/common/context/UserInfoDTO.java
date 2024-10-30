@@ -20,6 +20,11 @@ public class UserInfoDTO {
      * 房间号
      */
     private String roomId;
+
+    /**
+     * 用户等级
+     */
+    private Integer level;
     /**
      * 用户名
      */
