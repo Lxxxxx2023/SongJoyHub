@@ -15,19 +15,19 @@ import com.lx.SongJoyHub.client.dao.mapper.RoomReviewMapper;
 import com.lx.SongJoyHub.client.dto.req.RoomQueryReviewReqDTO;
 import com.lx.SongJoyHub.client.dto.req.RoomReviewReqDTO;
 import com.lx.SongJoyHub.client.service.RoomReviewService;
+import com.lx.SongJoyHub.client.util.RedisUtil;
 import com.lx.SongJoyHub.framework.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
+
+
 
 /**
  * 房间审核业务逻辑实现层
@@ -124,25 +124,14 @@ public class RoomReviewServiceImpl extends ServiceImpl<RoomReviewMapper, RoomRev
         stringRedisTemplate.delete(String.format(RedisConstant.ROOM_KEY,roomDO.getRoomId()));
     }
 
-    // TODO 后面进行重构
     private void refactorRoomCache(RoomDO roomDO) {
         //存入缓存中
         RoomQueryReviewReqDTO roomQueryReviewReqDTO = BeanUtil.toBean(roomDO, RoomQueryReviewReqDTO.class);
         Map<String, Object> cacheTargetMap = BeanUtil.beanToMap(roomQueryReviewReqDTO, false, true);
-        Map<String, String> actualCacheTargetMap = cacheTargetMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
-                entry -> entry.getValue() != null ? entry.getValue().toString() : ""));
-
-        String songCacheKey = String.format(RedisConstant.ROOM_KEY, roomDO.getRoomId());
-        String luaScript = "redis.call('HMSET',KEYS[1],unpack(ARGV, 1, #ARGV - 1))" +
-                "redis.call('EXPIREAT',KEYS[1],ARGV[#ARGV])";
-        List<String> keys = Collections.singletonList(songCacheKey);
-        List<String> args = new ArrayList<>(actualCacheTargetMap.size() * 2 + 1);
-        actualCacheTargetMap.forEach((k, v) -> {
-            args.add(k);
-            args.add(v);
-        });
-        args.add(String.valueOf(Instant.now().getEpochSecond() + 100000));
-        //执行lua脚本
-        stringRedisTemplate.execute(new DefaultRedisScript<>(luaScript, Long.class), keys, args.toArray());
+        RedisUtil.convertHash(String.format(RedisConstant.ROOM_KEY,roomDO.getRoomId())
+                ,stringRedisTemplate
+                ,cacheTargetMap
+                ,String.valueOf(Instant.now().getEpochSecond() + 100000)
+        );
     }
 }

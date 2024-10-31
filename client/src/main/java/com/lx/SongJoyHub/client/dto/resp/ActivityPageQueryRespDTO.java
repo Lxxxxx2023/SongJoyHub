@@ -30,7 +30,10 @@ public class ActivityPageQueryRespDTO {
      * 奖励内容
      */
     private String rewardContent;
-
+    /**
+     * 活动类型
+     */
+    private Integer activityType;
     /**
      * 活动状态 0 已开始 1 已结束
      */

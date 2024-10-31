@@ -38,10 +38,6 @@ public class RoomReservationDO  {
     */
     private Date endTime;
 
-    /**
-    * 支付的金额
-    */
-    private BigDecimal payAmount;
 
     /**
     * 创建时间

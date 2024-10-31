@@ -2,8 +2,6 @@ package com.lx.SongJoyHub.client.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.lang.Singleton;
-import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -15,8 +13,10 @@ import com.lx.SongJoyHub.client.dao.entity.ActivityDO;
 import com.lx.SongJoyHub.client.dao.mapper.ActivityMapper;
 import com.lx.SongJoyHub.client.dto.req.ActivityCreateReqDTO;
 import com.lx.SongJoyHub.client.dto.req.ActivityPageQueryReqDTO;
+import com.lx.SongJoyHub.client.dto.req.QueryCanPartakeActivityReqDTO;
 import com.lx.SongJoyHub.client.dto.resp.ActivityPageQueryRespDTO;
 import com.lx.SongJoyHub.client.dto.resp.ActivityQueryCanPartakeRespDTO;
+import com.lx.SongJoyHub.client.dto.resp.ActivityQueryCanPartakeResultRespDTO;
 import com.lx.SongJoyHub.client.dto.resp.ActivityQueryRespDTO;
 import com.lx.SongJoyHub.client.mq.event.ActivityDelayEvent;
 import com.lx.SongJoyHub.client.mq.producer.ActivityDelayExecutorStatusProducer;
@@ -24,13 +24,12 @@ import com.lx.SongJoyHub.client.service.ActivityService;
 import com.lx.SongJoyHub.client.service.basic.chain.ChainHandlerContext;
 import com.lx.SongJoyHub.client.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -64,7 +63,8 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, ActivityDO>
                 String.format(RedisConstant.ACTIVITY_KEY, activityQueryRespDTO.getActivityId())
                 , stringRedisTemplate
                 , cacheTargetMap
-                , String.valueOf(activityQueryRespDTO.getValidEndTime().getTime() / 1000));
+                , String.valueOf(activityQueryRespDTO.getValidEndTime().getTime() / 1000)
+        );
         // 发送mq 修改活动结束时 活动状态
         activityDelayExecutorStatusProducer.sendMessage(ActivityDelayEvent.builder()
                 .activityId(activityDO.getActivityId())
@@ -79,51 +79,59 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, ActivityDO>
         return activityDOS.stream().map(each -> BeanUtil.toBean(each, ActivityPageQueryRespDTO.class)).toList();
     }
 
-    // 根据用户信息获取能参与的活动
+    // 根据用户信息获取能参与的活动 TODO 有时间就重构吧
     @Override
-    public List<ActivityQueryCanPartakeRespDTO> getCanPartakeActivity() {
-        List<ActivityQueryCanPartakeRespDTO> results = new ArrayList<>();
-        // 查询缓存
-        String userCanCanPartakeKey = String.format(RedisConstant.CAN_PARTAKE_KEY, UserContext.getUserId());
-        Set<String> members = stringRedisTemplate.opsForSet().members(userCanCanPartakeKey);
-        if(members != null && !members.isEmpty()) {
-            members.stream().map(each -> JSON.parseObject(each, ActivityQueryCanPartakeRespDTO.class)).forEach(results::add);
-        }else {
-            // 查询数据库
-            Date now = DateUtil.date();
-            LambdaQueryWrapper<ActivityDO> queryWrapper = Wrappers.lambdaQuery(ActivityDO.class)
-                    .eq(ActivityDO::getActivityStatus, 1)
-                    .ge(ActivityDO::getValidEndTime, now)
-                    .le(ActivityDO::getValidStartTime, now)
-                    .orderByAsc(ActivityDO::getValidEndTime);
-            List<ActivityDO> activityDOS = activityMapper.selectList(queryWrapper);
-            Integer userLevel = UserContext.getUser().getLevel();
-            AtomicReference<Integer> flag = new AtomicReference<>(0);
-            activityDOS.forEach(each -> {
-                JSONObject receiveRule = JSONObject.parseObject(each.getReceiveRule());
-                // 目前暂定为这些条件 如果时间充足的话就解决吧
-                Integer level = receiveRule.getInteger("level");
-                if (level != null && userLevel < level) {
-                    flag.set(1);
+    public ActivityQueryCanPartakeResultRespDTO getCanPartakeActivity(QueryCanPartakeActivityReqDTO requestParam) {
+        // 查询数据库
+        Date now = DateUtil.date();
+        LambdaQueryWrapper<ActivityDO> queryWrapper = Wrappers.lambdaQuery(ActivityDO.class)
+                .eq(ActivityDO::getActivityStatus, 1)
+                .ge(ActivityDO::getValidEndTime, now)
+                .le(ActivityDO::getValidStartTime, now);
+        List<ActivityDO> activityDOS = activityMapper.selectList(queryWrapper);
+        List<ActivityDO> reliefLList = new ArrayList<>();
+        List<ActivityDO> grantList = new ArrayList<>();
+        AtomicReference<BigDecimal> discountAmount = new AtomicReference<>(BigDecimal.ZERO);
+        Integer level = UserContext.getUser().getLevel();
+        // 不符合开闭原则 不利用扩展
+        activityDOS.forEach(each -> {
+            JSONObject receiveRule = JSONObject.parseObject(each.getReceiveRule());
+            if(each.getActivityStatus() == 0) {
+                AtomicInteger flag = getAtomicInteger(requestParam, receiveRule, level);
+                if(flag.get() == 1){
+                    reliefLList.add(each);
+                    // 统计优惠金额
+                    JSONObject rewardContent = JSONObject.parseObject(each.getRewardContent());
+                    Integer type = rewardContent.getInteger("type");
+                    Double amount = rewardContent.getDouble("amount");
+                    BigDecimal amountDecimal = BigDecimal.valueOf(amount);
+                    if(type == 1) { // 折扣
+                        discountAmount.set(requestParam.getAmount().multiply(amountDecimal));
+                    }else if(type == 0){ // 满减
+                        discountAmount.set(requestParam.getAmount().subtract(amountDecimal));
+                    }
                 }
-//            Integer limit = receiveRule.getInteger("limit"); // 参加这个活动的次数
-                if (flag.get() == 1) {
-                    results.add(BeanUtil.toBean(each, ActivityQueryCanPartakeRespDTO.class));
-                }
-            });
-            // 创建缓存
-            List<String> cacheList = new ArrayList<>(results.stream().map(JSON::toJSONString).toList());
-            List<String> keys = List.of(userCanCanPartakeKey);
-            cacheList.add(cacheList.get(cacheList.size() - 1));
-            DefaultRedisScript<Void> buildLuaScript = Singleton.get((USER_CAN_PARTAKE_LUA_PATH), () -> {
-                DefaultRedisScript<Void> redisScript = new DefaultRedisScript<>();
-                redisScript.setScriptSource(new ResourceScriptSource(new ClassPathResource(USER_CAN_PARTAKE_LUA_PATH)));
-                redisScript.setResultType(Void.class);
-                return redisScript;
-            });
-            stringRedisTemplate.execute(buildLuaScript, keys,cacheList.toArray());
+            }else {
+                AtomicInteger flag = getAtomicInteger(requestParam, receiveRule, level);
+                if(flag.get() == 1) grantList.add(each);
+            }
+        });
+        return ActivityQueryCanPartakeResultRespDTO.builder()
+                .reliefLList(reliefLList.stream().map(each -> BeanUtil.toBean(each, ActivityQueryCanPartakeRespDTO.class)).toList())
+                .grantList(grantList.stream().map(each -> BeanUtil.toBean(each, ActivityQueryCanPartakeRespDTO.class)).toList())
+                .discount_amount(discountAmount.get())
+                .build();
+    }
+
+    private static AtomicInteger getAtomicInteger(QueryCanPartakeActivityReqDTO requestParam, JSONObject jsonObject, Integer level) {
+        AtomicInteger flag = new AtomicInteger(1);
+        if(jsonObject.getInteger("level")!= null && jsonObject.getInteger("level") > level) {
+            flag.set(0);
         }
-        return results;
+        if(jsonObject.getInteger("timeCount") != null && jsonObject.getInteger("timeCount") > requestParam.getTimeCount()) {
+            flag.set(0);
+        }
+        return flag;
     }
 
 }

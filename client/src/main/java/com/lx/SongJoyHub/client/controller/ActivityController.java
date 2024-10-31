@@ -34,11 +34,6 @@ public class ActivityController {
         return Results.success(activityService.pageQueryActivity(requestParam));
     }
 
-    // 获取用户能参加的活动
-    @GetMapping("/able")
-    public Result<List<ActivityQueryCanPartakeRespDTO>> getCanPartakeActivity() {
-        return Results.success(activityService.getCanPartakeActivity());
-    }
 // 管理员创建和编辑发布活动， 活动应该分为主动参与和被动触发
 // 举个具体的例子：国庆期间 预定房间便宜20元 这种情况肯定不是用户主动点击参加活动才能参加的，而是系统自动判定的
 // 而用户主动去参与的活动应该是 用户积分去升级会员等级 ，用积分去兑换一些东西 而这些活动应该算到积分服务中去

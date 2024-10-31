@@ -23,8 +23,10 @@ public class ActivityCreateReqDTO {
      * 奖励内容
      */
     private String rewardContent;
-
-
+    /**
+     * 活动类型
+     */
+    private Integer activityType;
     /**
      * 活动开始时间
      */

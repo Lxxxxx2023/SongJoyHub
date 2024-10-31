@@ -13,7 +13,6 @@
         <module>framework</module>
         <!-- 客户端模块: 负责给顾客提供服务 调用其他服务 如 积分服务 播放服务-->
         <module>client</module>
-        <module>music</module>
     </modules>
 
     <properties>

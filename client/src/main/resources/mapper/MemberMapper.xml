@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lx.SongJoyHub.client.dao.mapper.MemberMapper">
+
+    <update id="decrementBalance">
+        update `t_member` set balance = balance - #{money}
+        where id = #{id} and balance >= #{money}
+    </update>
+</mapper>

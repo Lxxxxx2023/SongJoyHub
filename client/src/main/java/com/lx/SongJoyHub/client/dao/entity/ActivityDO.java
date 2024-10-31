@@ -39,7 +39,7 @@ public class ActivityDO {
     private String rewardContent;
 
     /**
-    * 活动状态 0 已开始 1 已结束
+    * 活动状态 1 已开始 0 已结束
     */
     private int activityStatus;
 
@@ -53,6 +53,10 @@ public class ActivityDO {
     */
     private Date validEndTime;
 
+    /**
+     * 活动类型
+     */
+    private Integer activityType;
     /**
     * 创建时间
     */

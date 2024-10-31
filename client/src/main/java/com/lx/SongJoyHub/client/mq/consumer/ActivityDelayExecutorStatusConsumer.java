@@ -32,7 +32,7 @@ public class ActivityDelayExecutorStatusConsumer implements RocketMQListener<Mes
         ActivityDelayEvent message = messageWrapper.getMessage();
         ActivityDO activityDO = ActivityDO.builder()
                 .activityId(message.getActivityId())
-                .status(message.getActivityStatus()).build();
+                .activityStatus(message.getActivityStatus()).build();
         activityMapper.updateById(activityDO);
     }
 }

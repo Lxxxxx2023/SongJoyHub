@@ -25,7 +25,32 @@ public class RoomReservationReqDTO {
      */
     private Date endTime;
     /**
+     * 总金额
+     */
+    private BigDecimal totalAmount;
+
+    /**
      * 支付的金额
      */
-    private BigDecimal payAmount;
+    private BigDecimal payableAmount;
+
+    /**
+     * 使用的优惠券id
+     */
+    private Long couponId;
+
+    /**
+     * 优惠券优惠金额
+     */
+    private BigDecimal couponAmount;
+
+    /**
+     * 该订单涉及的活动
+     */
+    private String activityIds;
+
+    /**
+     * 活动总优惠金额
+     */
+    private BigDecimal discountAmount;
 }

@@ -4,9 +4,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.lx.SongJoyHub.client.dao.entity.ActivityDO;
 import com.lx.SongJoyHub.client.dto.req.ActivityCreateReqDTO;
 import com.lx.SongJoyHub.client.dto.req.ActivityPageQueryReqDTO;
-import com.lx.SongJoyHub.client.dto.req.ActivityPartakeReqDTO;
+import com.lx.SongJoyHub.client.dto.req.QueryCanPartakeActivityReqDTO;
 import com.lx.SongJoyHub.client.dto.resp.ActivityPageQueryRespDTO;
-import com.lx.SongJoyHub.client.dto.resp.ActivityQueryCanPartakeRespDTO;
+import com.lx.SongJoyHub.client.dto.resp.ActivityQueryCanPartakeResultRespDTO;
 
 import java.util.List;
 
@@ -32,6 +32,6 @@ public interface ActivityService extends IService<ActivityDO> {
      * 获取当前用户能够参与的活动
      * @return 能够参与的活动
      */
-    List<ActivityQueryCanPartakeRespDTO> getCanPartakeActivity();
+    ActivityQueryCanPartakeResultRespDTO getCanPartakeActivity(QueryCanPartakeActivityReqDTO requestParam);
 
 }

@@ -6,11 +6,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
-
-import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +20,7 @@ public final class JWTUtil {
     private static final long EXPIRATION = 6400000L;
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String ISS = "SongJoyHub";
-    private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+    private static final String SECRET = "SecretKey039245678901232039487623456783092349288901402967890140939827";
 
     /**
      * 生成用户token
@@ -38,7 +35,7 @@ public final class JWTUtil {
         userInfoMap.put("userName", userInfo.getUserName());
         userInfoMap.put("roomId", userInfo.getRoomId());
         String jwtToken = Jwts.builder()
-                .signWith(SECRET_KEY)
+                .signWith(SignatureAlgorithm.HS512, SECRET)
                 .setIssuedAt(new Date())
                 .setIssuer(ISS)
                 .setSubject(JSON.toJSONString(userInfoMap))
@@ -48,11 +45,10 @@ public final class JWTUtil {
     }
 
     public static UserInfoDTO parseJwtToken(String jwtToken) {
-        log.info("jwtToken: {}", jwtToken);
         if (StringUtils.hasText(jwtToken)) {
             String actualJwtToken = jwtToken.replace(TOKEN_PREFIX, "");
             try {
-                 Claims claims = Jwts.parserBuilder().setSigningKey(SECRET_KEY).build().parseClaimsJws(actualJwtToken).getBody();
+                Claims claims = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(actualJwtToken).getBody();
                 Date expiration = claims.getExpiration();
                 if (expiration.after(new Date())) {
                     String subject = claims.getSubject();
