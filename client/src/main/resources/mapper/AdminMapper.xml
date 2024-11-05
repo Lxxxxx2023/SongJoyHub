@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lx.SongJoyHub.client.dao.mapper.AdminMapper">
+    <resultMap id="AdminResultMap" type="com.lx.SongJoyHub.client.dao.entity.AdminDO">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="phone" column="phone"/>
+        <result property="icon" column="icon"/>
+        <result property="nick" column="nick"/>
+        <result property="password" column="password"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="level" column="level"/>
+    </resultMap>
+    <update id="upAdminLevel">
+        update t_admin
+        set level = level + 1
+        where level &lt; 2 and id = #{id}
+    </update>
+
+    <update id="downAdminLevel">
+        update t_admin
+        set level = level - 1
+        where level &gt; 1 and id = #{id}
+    </update>
+
+    <select id="pageQueryAdmin" resultMap="AdminResultMap">
+        select id, name, phone, icon, nick, create_time, level
+        from t_admin
+        limit #{pageSize} offset #{page}
+    </select>
+    <select id="multipleQueryAdmin" resultMap="AdminResultMap">
+        select id, name, phone, icon, nick, create_time, level
+        from t_admin
+        <where>
+            <if test="req.name != null and req.name != '' ">
+                name like concat('%',#{req.name},'%')
+            </if>
+            <if test="req.phone != null and req.phone != ''">
+                phone = #{req.phone}
+            </if>
+            <if test="req.id != null">
+                id = #{req.id}
+            </if>
+            <if test="req.level != null">
+                `level` = #{req.level}
+            </if>
+        </where>
+        limit #{req.pageSize} offset #{req.page}
+    </select>
+</mapper>

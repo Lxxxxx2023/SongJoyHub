@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lx.SongJoyHub.client.dao.mapper.RoomReviewMapper">
+    <resultMap id="RoomReviewResultMap" type="com.lx.SongJoyHub.client.dao.entity.RoomReviewDO">
+        <id property="id" column="id" />
+        <result property="committerId" column="committer_id" />
+        <result property="committerName" column="committer_name" />
+        <result property="opId" column="op_id" />
+        <result property="opName" column="op_name" />
+        <result property="cause" column="cause" />
+        <result property="originalData" column="original_data" />
+        <result property="nowData" column="now_data" />
+        <result property="notes" column="notes" />
+        <result property="status" column="status" />
+        <result property="type" column="type" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+
+    <update id="updateRoomReview">
+        update t_room_review
+        set notes    = #{req.notes},
+            op_id    = #{req.opId},
+            op_name  = #{req.opName},
+            `status` = #{req.status},
+            `complate` = 1
+        where id = #{req.roomReviewId} and #{req.level} >= 2
+    </update>
+    <select id="pageQueryRoomReview" resultMap="RoomReviewResultMap">
+        select id, committer_id, committer_name, type, create_time, `status`
+        from t_room_review
+        limit #{pageSize} offset #{page}
+    </select>
+    <select id="multipleQueryRoomReview"
+            resultMap="RoomReviewResultMap">
+        select id, committer_id, committer_name, type, create_time, `status`
+        from t_room_review
+        <where>
+            <if test="req.id != null">
+                and id = #{req.id}
+            </if>
+            <if test="req.committerId != null">
+                and committer_id = #{req.committerId}
+            </if>
+            <if test="req.opId != null">
+                and op_id = #{req.opId}
+            </if>
+            <if test="req.type != null">
+                and `type` = #{req.type}
+            </if>
+            <if test="req.status == null">
+                and `status` is null
+            </if>
+            <if test="req.status != null and req.status != 2">
+                and `status` = #{req.status}
+            </if>
+            <if test="req.minCreateTime != null">
+                and create_time &gt; #{req.minCreateTime}
+            </if>
+            <if test="req.maxCreateTime != null">
+                and create_time &lt; #{req.maxCreateTime}
+            </if>
+            <if test="req.minUpdateTime != null">
+                and update_time &gt; #{req.minUpdateTime}
+            </if>
+            <if test="req.maxUpdateTime != null">
+                and update_time &gt; #{req.maxUpdateTime}
+            </if>
+        </where>
+        limit #{req.pageSize} offset #{req.page}
+    </select>
+</mapper>
