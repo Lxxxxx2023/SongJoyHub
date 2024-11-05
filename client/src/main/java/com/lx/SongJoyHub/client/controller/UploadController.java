@@ -78,10 +78,10 @@ public class UploadController {
     private void validFile(MultipartFile multipartFile) {
         long size = multipartFile.getSize();
         if (size > max_memory) {
-            throw new ServiceException("上传大小不能超过 16M");
+            throw new ServiceException("上传大小不能超过 24M");
         }
         String suffix = FileUtil.getSuffix(multipartFile.getOriginalFilename());
-        if (!Arrays.asList("mp3", "ogg", "lrc").contains(suffix)) {
+        if (!Arrays.asList("mp3", "ogg", "lrc","png","jpg","txt","lrc").contains(suffix)) {
             throw new ServiceException("文件类型错误");
         }
     }
@@ -89,17 +89,14 @@ public class UploadController {
     public String analysisMusicDuration(File file) {
         int minutes = 0, seconds = 0;
         try (InputStream input = new FileInputStream(file)) {
-            // Mp3Parser for MP3 files
             BodyContentHandler handler = new BodyContentHandler();
             Metadata metadata = new Metadata();
             Mp3Parser mp3Parser = new Mp3Parser();
             mp3Parser.parse(input, handler, metadata, new ParseContext());
 
-            // 获取时长并转换为秒
             String durationStr = metadata.get("xmpDM:duration");
             double durationInSeconds = Double.parseDouble(durationStr);
 
-            // 转换成分钟:秒的格式
             minutes = (int) (durationInSeconds / 60);
             seconds = (int) (durationInSeconds % 60);
 

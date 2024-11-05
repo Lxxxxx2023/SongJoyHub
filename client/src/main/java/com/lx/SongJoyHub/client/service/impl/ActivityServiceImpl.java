@@ -1,6 +1,7 @@
 package com.lx.SongJoyHub.client.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -69,7 +70,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, ActivityDO>
         activityDelayExecutorStatusProducer.sendMessage(ActivityDelayEvent.builder()
                 .activityId(activityDO.getActivityId())
                 .activityStatus(0)
-                .delayTime(activityDO.getValidEndTime().getTime())
+                .delayTime(activityDO.getValidEndTime().getTime() - new DateTime().getTime())
                 .build());
     }
 
@@ -86,18 +87,18 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, ActivityDO>
         Date now = DateUtil.date();
         LambdaQueryWrapper<ActivityDO> queryWrapper = Wrappers.lambdaQuery(ActivityDO.class)
                 .eq(ActivityDO::getActivityStatus, 1)
-                .ge(ActivityDO::getValidEndTime, now)
-                .le(ActivityDO::getValidStartTime, now);
+                .ge(ActivityDO::getValidEndTime, String.valueOf(now))
+                .le(ActivityDO::getValidStartTime, String.valueOf(now));
         List<ActivityDO> activityDOS = activityMapper.selectList(queryWrapper);
         List<ActivityDO> reliefLList = new ArrayList<>();
         List<ActivityDO> grantList = new ArrayList<>();
         AtomicReference<BigDecimal> discountAmount = new AtomicReference<>(BigDecimal.ZERO);
         Integer level = UserContext.getUser().getLevel();
-        // 不符合开闭原则 不利用扩展
+        // 不符合开闭原则 不利于扩展
         activityDOS.forEach(each -> {
             JSONObject receiveRule = JSONObject.parseObject(each.getReceiveRule());
-            if(each.getActivityStatus() == 0) {
-                AtomicInteger flag = getAtomicInteger(requestParam, receiveRule, level);
+            if(each.getActivityType() == 0) {
+                AtomicInteger flag = isAdd(requestParam, receiveRule, level);
                 if(flag.get() == 1){
                     reliefLList.add(each);
                     // 统计优惠金额
@@ -112,7 +113,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, ActivityDO>
                     }
                 }
             }else {
-                AtomicInteger flag = getAtomicInteger(requestParam, receiveRule, level);
+                AtomicInteger flag = isAdd(requestParam, receiveRule, level);
                 if(flag.get() == 1) grantList.add(each);
             }
         });
@@ -123,12 +124,14 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, ActivityDO>
                 .build();
     }
 
-    private static AtomicInteger getAtomicInteger(QueryCanPartakeActivityReqDTO requestParam, JSONObject jsonObject, Integer level) {
+    private static AtomicInteger isAdd(QueryCanPartakeActivityReqDTO requestParam, JSONObject jsonObject, Integer userLevel) {
         AtomicInteger flag = new AtomicInteger(1);
-        if(jsonObject.getInteger("level")!= null && jsonObject.getInteger("level") > level) {
+        Integer level = jsonObject.getInteger("level");
+        if(level != null && level > userLevel) {
             flag.set(0);
         }
-        if(jsonObject.getInteger("timeCount") != null && jsonObject.getInteger("timeCount") > requestParam.getTimeCount()) {
+        Integer timeCount = jsonObject.getInteger("timeCount");
+        if(timeCount != null && timeCount > requestParam.getTimeCount()) {
             flag.set(0);
         }
         return flag;

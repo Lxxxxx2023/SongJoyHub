@@ -36,5 +36,5 @@ public class RoomQueryRespDTO {
     /**
      * 房间类型
      */
-    private Integer type;
+    private Integer roomType;
 }

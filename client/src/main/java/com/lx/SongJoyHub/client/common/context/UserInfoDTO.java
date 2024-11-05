@@ -17,6 +17,11 @@ public class UserInfoDTO {
     private String userId;
 
     /**
+     * 用户名
+     */
+    private String userName;
+
+    /**
      * 房间号
      */
     private String roomId;
@@ -25,10 +30,6 @@ public class UserInfoDTO {
      * 用户等级
      */
     private Integer level;
-    /**
-     * 用户名
-     */
-    private String userName;
 
     /**
      * 用户角色

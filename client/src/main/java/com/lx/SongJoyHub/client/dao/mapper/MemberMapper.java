@@ -17,4 +17,10 @@ public interface MemberMapper extends BaseMapper<MemberDO> {
      */
     int decrementBalance(@Param("money") BigDecimal money,@Param("id") Long id);
 
+    /**
+     * 返还用户订单金额
+     * @param money 金额
+     * @param id 用户id
+     */
+    int returnBalance(@Param("money") BigDecimal money,@Param("id") Long id);
 }

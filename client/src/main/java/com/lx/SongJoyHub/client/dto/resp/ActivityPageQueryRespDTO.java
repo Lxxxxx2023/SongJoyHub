@@ -19,7 +19,7 @@ public class ActivityPageQueryRespDTO {
     /**
      * 活动名
      */
-    private String activeName;
+    private String activityName;
 
     /**
      * 参加规则

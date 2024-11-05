@@ -12,7 +12,7 @@ public class SongReviewReqDTO {
     /**
      * 主键id
      */
-    private Integer id;
+    private Long id;
     /**
      * 备注
      */

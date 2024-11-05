@@ -1,7 +1,9 @@
 package com.lx.SongJoyHub.client.controller;
 
+import com.lx.SongJoyHub.client.dto.req.SongMultipleQueryReqDTO;
 import com.lx.SongJoyHub.client.dto.req.SongReviewReqDTO;
-import com.lx.SongJoyHub.client.dto.resp.SongReviewRespDTO;
+import com.lx.SongJoyHub.client.dto.resp.SongReviewPageQueryRespDTO;
+import com.lx.SongJoyHub.client.dto.resp.SongReviewQueryDiffRespDTO;
 import com.lx.SongJoyHub.client.service.SongReviewService;
 import com.lx.SongJoyHub.framework.result.Result;
 import com.lx.SongJoyHub.framework.web.Results;
@@ -22,9 +24,25 @@ public class SongReviewController {
     /**
      * 查看未进行的审核
      */
-    @GetMapping("/query-unprocessed")
-    public Result<List<SongReviewRespDTO>> examineQueryUnprocessed() {
-        return Results.success(songReviewService.examineQueryUnprocessed());
+    @GetMapping("/page-query")
+    public Result<List<SongReviewPageQueryRespDTO>> pageQuerySongReview(@RequestParam("page") Integer page, @RequestParam("pageSize") Integer pageSize) {
+        return Results.success(songReviewService.pageQuerySongReview(page - 1, pageSize));
+    }
+
+    /**
+     * 多条件查询 审核情况
+     */
+    @PostMapping("/multiple-query")
+    public Result<List<SongReviewPageQueryRespDTO>> multipleQuerySongReview(@RequestBody SongMultipleQueryReqDTO requestParam) {
+        return Results.success(songReviewService.multipleQuerySongReview(requestParam));
+    }
+
+    /**
+     * 根据id查询歌曲审核情况
+     */
+    @GetMapping("/query-review-info")
+    public Result<SongReviewQueryDiffRespDTO> querySongReviewDiff(@RequestParam("id") Long id) {
+        return Results.success(songReviewService.querySongReviewDiff(id));
     }
     /**
      * 审批新建歌曲

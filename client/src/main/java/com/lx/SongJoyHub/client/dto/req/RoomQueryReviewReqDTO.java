@@ -27,7 +27,7 @@ public class RoomQueryReviewReqDTO {
     /**
      * 审核状态
      */
-    private int status;
+    private Integer status;
 
     /**
      * 最早时间

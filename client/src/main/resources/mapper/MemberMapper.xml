@@ -8,4 +8,8 @@
         update `t_member` set balance = balance - #{money}
         where id = #{id} and balance >= #{money}
     </update>
+    <update id="returnBalance">
+        update `t_member` set balance = balance + #{money}
+        where id = #{id}
+    </update>
 </mapper>

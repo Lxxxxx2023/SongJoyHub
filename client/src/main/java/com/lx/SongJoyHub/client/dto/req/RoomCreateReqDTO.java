@@ -28,4 +28,9 @@ public class RoomCreateReqDTO {
      * 房间类型
      */
     private Integer roomType;
+
+    /**
+     * 原因
+     */
+    private String cause;
 }

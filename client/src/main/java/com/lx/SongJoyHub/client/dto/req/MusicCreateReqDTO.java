@@ -25,7 +25,7 @@ public class MusicCreateReqDTO {
     /**
      * 歌曲简介
      */
-    private String desc;
+    private String introduction;
 
     /**
      * 歌曲存放位置
@@ -45,4 +45,9 @@ public class MusicCreateReqDTO {
      * 歌词存放位置
      */
     private String lyric;
+
+    /**
+     * 原因
+     */
+    private String cause;
 }

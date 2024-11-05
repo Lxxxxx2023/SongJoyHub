@@ -3,7 +3,6 @@ package com.lx.SongJoyHub.client.controller;
 import com.lx.SongJoyHub.client.dto.req.ActivityCreateReqDTO;
 import com.lx.SongJoyHub.client.dto.req.ActivityPageQueryReqDTO;
 import com.lx.SongJoyHub.client.dto.resp.ActivityPageQueryRespDTO;
-import com.lx.SongJoyHub.client.dto.resp.ActivityQueryCanPartakeRespDTO;
 import com.lx.SongJoyHub.client.service.ActivityService;
 import com.lx.SongJoyHub.framework.result.Result;
 import com.lx.SongJoyHub.framework.web.Results;

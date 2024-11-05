@@ -20,6 +20,9 @@ import java.util.Date;
 public class RoomDO {
 
     @TableId(type = IdType.AUTO)
+    /**
+     * 房间id
+     */
     private Long roomId;
     /**
     * 房间名
@@ -44,7 +47,7 @@ public class RoomDO {
     /**
      * 房间类型
      */
-    private String roomType;
+    private Integer roomType;
 
     /**
     * 创建时间

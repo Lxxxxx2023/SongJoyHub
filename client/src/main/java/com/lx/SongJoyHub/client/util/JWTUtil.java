@@ -2,6 +2,7 @@ package com.lx.SongJoyHub.client.util;
 
 import com.alibaba.fastjson.JSON;
 import com.lx.SongJoyHub.client.common.context.UserInfoDTO;
+import com.lx.SongJoyHub.client.common.enums.UserRoleEnum;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -17,7 +18,7 @@ import java.util.Map;
  */
 @Slf4j
 public final class JWTUtil {
-    private static final long EXPIRATION = 6400000L;
+    private static final long EXPIRATION = 86400L;
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String ISS = "SongJoyHub";
     private static final String SECRET = "SecretKey039245678901232039487623456783092349288901402967890140939827";
@@ -31,8 +32,9 @@ public final class JWTUtil {
     public static String generateToken(UserInfoDTO userInfo) {
         Map<String, Object> userInfoMap = new HashMap<>();
         userInfoMap.put("userId", userInfo.getUserId());
-        userInfoMap.put("userRole", userInfo.getUserRole().getRole());
+        userInfoMap.put("userRole", userInfo.getUserRole());
         userInfoMap.put("userName", userInfo.getUserName());
+        userInfoMap.put("level", userInfo.getLevel());
         userInfoMap.put("roomId", userInfo.getRoomId());
         String jwtToken = Jwts.builder()
                 .signWith(SignatureAlgorithm.HS512, SECRET)
@@ -54,10 +56,7 @@ public final class JWTUtil {
                     String subject = claims.getSubject();
                     return JSON.parseObject(subject, UserInfoDTO.class);
                 }
-            } catch (ExpiredJwtException ignored) {
-                log.error("JWT 已过期", ignored);
-            } catch (Exception e) {
-                log.error("JWT Token 解析失败，请检查", e);
+            } catch (Exception ignored) {
             }
         }
         return null;

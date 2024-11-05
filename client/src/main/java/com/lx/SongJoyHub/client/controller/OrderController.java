@@ -3,12 +3,15 @@ package com.lx.SongJoyHub.client.controller;
 import com.lx.SongJoyHub.client.dto.req.OrderPayReqDTO;
 import com.lx.SongJoyHub.client.dto.req.QueryCanPartakeActivityReqDTO;
 import com.lx.SongJoyHub.client.dto.resp.ActivityQueryCanPartakeResultRespDTO;
+import com.lx.SongJoyHub.client.dto.resp.OrderQueryRespDTO;
 import com.lx.SongJoyHub.client.service.ActivityService;
 import com.lx.SongJoyHub.client.service.OrderService;
 import com.lx.SongJoyHub.framework.result.Result;
 import com.lx.SongJoyHub.framework.web.Results;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 订单控制层
@@ -33,5 +36,11 @@ public class OrderController {
     public Result<Void> payOrder(@RequestBody OrderPayReqDTO requestParam) {
         orderService.payOrder(requestParam);
         return Results.success();
+    }
+
+    //查看用户订单
+    @GetMapping("/queryAll")
+    public Result<List<OrderQueryRespDTO>> queryAllOrder() {
+        return Results.success(orderService.queryAllOrder());
     }
 }

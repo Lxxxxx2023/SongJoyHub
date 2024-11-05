@@ -24,7 +24,7 @@ public class ActivityPageQueryReqDTO {
     /**
      * 活动名
      */
-    private String activeName;
+    private String activityName;
 
     /**
      * 活动状态 0 已开始 1 已结束

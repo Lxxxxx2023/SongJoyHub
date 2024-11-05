@@ -1,5 +1,6 @@
 package com.lx.SongJoyHub.client.dto.req;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.util.Date;
@@ -12,7 +13,7 @@ public class ActivityCreateReqDTO {
     /**
      * 活动名
      */
-    private String activeName;
+    private String activityName;
 
     /**
      * 参加规则
@@ -30,10 +31,12 @@ public class ActivityCreateReqDTO {
     /**
      * 活动开始时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date validStartTime;
 
     /**
      * 活动结束时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date validEndTime;
 }

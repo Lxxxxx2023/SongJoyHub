@@ -3,6 +3,21 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.lx.SongJoyHub.client.dao.mapper.SongMapper">
+    <resultMap id="songResultMap" type="com.lx.SongJoyHub.client.dao.entity.SongDO">
+        <id column="song_id" property="songId" />
+        <result column="song_name" property="songName" />
+        <result column="singer" property="singer" />
+        <result column="song_language" property="songLanguage" />
+        <result column="introduction" property="introduction" />
+        <result column="song_address" property="songAddress" />
+        <result column="category" property="category" />
+        <result column="duration" property="duration" />
+        <result column="lyric" property="lyric" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="song_status" property="songStatus" />
+        <result column="del_flag" property="delFlag" />
+    </resultMap>
 
 
     <update id="updateSong" parameterType="com.lx.SongJoyHub.client.dao.entity.SongDO">
@@ -30,9 +45,42 @@
                 song_name = #{song.songName},
             </if>
             <if test="song.category != null and song.category != ''">
-                song.category = #{song.category}
+                category = #{song.category},
             </if>
+            song_status = 1
         </set>
         WHERE song_id = #{song.songId}
     </update>
+    <update id="restoreSongStatus">
+        update t_song
+        set song_status = 1
+        where song_id = #{songId}
+    </update>
+    <select id="selectSongBySinger" resultType="com.lx.SongJoyHub.client.dao.entity.SongDO"
+    >
+        select *
+        from t_song
+        where singer in #{singerList} limit #{num} offset 0
+    </select>
+    <select id="selectSongByLanguagesAndType" resultType="com.lx.SongJoyHub.client.dao.entity.SongDO">
+        select *
+        from t_song
+        where song_language in #{languagesList} or category in #{songTypeList} limit #{num} offset 0
+    </select>
+    <select id="pageQuerySong" resultMap="songResultMap">
+        select * from t_song
+        limit #{pageSize} offset #{page}
+    </select>
+    <select id="fuzzyInquiry" resultMap="songResultMap">
+        select * from t_song
+        <where>
+            <if test="req.songName!=null and req.songName!= '' "> and song_name = #{req.songName}</if>
+            <if test="req.category!=null and req.category!= '' ">and category = #{req.category}</if>
+            <if test="req.songLanguage!=null and req.songLanguage!= '' ">and song_language = #{req.songLanguage}</if>
+            <if test="req.singer!=null and req.singer!= '' ">and singer = #{req.singer}</if>
+            <if test="req.songStatus!=null ">and song_status = #{req.songStatus}</if>
+        </where>
+        limit #{req.pageSize} offset #{req.page}
+    </select>
+
 </mapper>

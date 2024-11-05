@@ -21,7 +21,7 @@ public class ActivityQueryCanPartakeRespDTO {
     /**
      * 活动名
      */
-    private String activeName;
+    private String activityName;
 
     /**
      * 奖励内容

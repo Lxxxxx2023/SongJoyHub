@@ -8,15 +8,23 @@ import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.lx.SongJoyHub.client.common.context.UserContext;
 import com.lx.SongJoyHub.client.dao.entity.MemberDO;
 import com.lx.SongJoyHub.client.dao.entity.OrderDO;
+import com.lx.SongJoyHub.client.dao.entity.RoomDO;
+import com.lx.SongJoyHub.client.dao.entity.RoomReservationDO;
 import com.lx.SongJoyHub.client.dao.mapper.MemberMapper;
 import com.lx.SongJoyHub.client.dao.mapper.OrderMapper;
+import com.lx.SongJoyHub.client.dao.mapper.RoomMapper;
+import com.lx.SongJoyHub.client.dao.mapper.RoomReservationMapper;
 import com.lx.SongJoyHub.client.dto.req.OrderPayReqDTO;
+import com.lx.SongJoyHub.client.dto.resp.OrderQueryRespDTO;
 import com.lx.SongJoyHub.client.service.OrderService;
 import com.lx.SongJoyHub.framework.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 订单业务逻辑实现层
@@ -28,6 +36,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, OrderDO> implemen
     private final OrderMapper orderMapper;
 
     private final MemberMapper memberMapper;
+    private final RoomMapper roomMapper;
+    private final RoomReservationMapper roomReservationMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -52,5 +62,37 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, OrderDO> implemen
             throw new ServiceException("订单状态修改失败");
         }
         // TODO 发放奖励
+        // TODO 超时取消
+    }
+
+    @Override
+    public List<OrderQueryRespDTO> queryAllOrder() {
+        LambdaQueryWrapper<OrderDO> queryWrapper = Wrappers.lambdaQuery(OrderDO.class)
+                .eq(OrderDO::getUserId, UserContext.getUserId())
+                .orderByDesc(OrderDO::getCreateTime);
+        List<OrderDO> orderDOS = orderMapper.selectList(queryWrapper);
+        List<OrderQueryRespDTO> orderQueryList = new ArrayList<>();
+        orderDOS.forEach(orderDO -> {
+            LambdaQueryWrapper<RoomDO> queryRoom = Wrappers.lambdaQuery(RoomDO.class)
+                    .eq(RoomDO::getRoomId, orderDO.getRoomId());
+            RoomDO roomDO = roomMapper.selectOne(queryRoom);
+            RoomReservationDO roomReservationDO = roomReservationMapper.selectById(orderDO.getReservationId());
+            OrderQueryRespDTO orderQueryRespDTO = OrderQueryRespDTO.builder()
+                    .orderId(orderDO.getId())
+                    .roomName(roomDO.getRoomName())
+                    .roomType(roomDO.getRoomType())
+                    .startTime(roomReservationDO.getStartTime())
+                    .endTime(roomReservationDO.getEndTime())
+                    .orderStatus(orderDO.getOrderStatus())
+                    .createTime(orderDO.getCreateTime())
+                    .updateTime(orderDO.getUpdateTime())
+                    .orderStatus(orderDO.getOrderStatus())
+                    .discountAmount(orderDO.getDiscountAmount())
+                    .totalAmount(orderDO.getTotalAmount())
+                    .payableAmount(orderDO.getPayableAmount())
+                    .build();
+            orderQueryList.add(orderQueryRespDTO);
+        });
+        return orderQueryList;
     }
 }

@@ -3,23 +3,110 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.lx.SongJoyHub.client.dao.mapper.RoomMapper">
+    <resultMap id="RoomResultMap" type="com.lx.SongJoyHub.client.dao.entity.RoomDO">
+        <id column="room_id" property="roomId"/>
+        <result column="room_name" property="roomName"/>
+        <result column="price" property="price"/>
+        <result column="room_status" property="roomStatus"/>
+        <result column="introduction" property="introduction"/>
+        <result column="room_type" property="roomType"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
 
     <update id="updateRoom" parameterType="com.lx.SongJoyHub.client.dao.entity.RoomDO">
-        update t_room <set>
-        <if test="room.roomName != null and room.roomName != ''">
-            room_name = #{room.roomName}
-        </if>
-        <if test="room.roomType != null and room.roomType != '' ">
-            room_type = #{room.roomType}
-        </if>
-        <if test="room.price != null and room.price > 0">
-            price = #{room.price}
-        </if>
-        <if test="room.introduction != null and room.introduction != '' ">
-            introduction = #{room.introduction}
-        </if>
-
+        update t_room
+        <set>
+            <if test="room.roomId != null">
+                room_status = 1
+            </if>
+            <if test="room.roomName != null and room.roomName != ''">
+                room_name = #{room.roomName}
+            </if>
+            <if test="room.roomType != null and room.roomType != '' ">
+                room_type = #{room.roomType}
+            </if>
+            <if test="room.price != null and room.price > 0">
+                price = #{room.price}
+            </if>
+            <if test="room.introduction != null and room.introduction != '' ">
+                introduction = #{room.introduction}
+            </if>
+            `status` = 1
+        </set>
         where room_id = #{room.roomId}
-    </set>
     </update>
+    <update id="updateRoomStatus">
+        update t_room
+        set room_status = 3
+        where room_status = 1 and room_id = #{id}
+    </update>
+    <update id="restoreRoomStatus">
+        update t_room
+        set room_status = 1
+        where room_status = 3 and room_id = #{id}
+    </update>
+    <select id="pageQueryRoom" resultMap="RoomResultMap">
+        select * from t_room limit #{pageSize} offset #{page}
+    </select>
+    <select id="fuzzyInquiryRoom" resultMap="RoomResultMap">
+        select *
+        from t_room
+        <where>
+            <if test="param.roomId != null">
+                AND room_id = #{param.roomId}
+            </if>
+            <if test="param.roomName != null and param.roomName != ''">
+                AND room_name LIKE CONCAT('%', #{param.roomName}, '%')
+            </if>
+
+            <if test="param.minPrice != null">
+                AND price &gt;= #{param.minPrice}
+            </if>
+
+            <if test="param.maxPrice != null">
+                AND price &lt;= #{param.maxPrice}
+            </if>
+
+            <if test="param.roomType != null">
+                AND room_type = #{param.roomType}
+            </if>
+
+            <if test="param.roomStatus != null">
+                AND room_status = #{param.roomStatus}
+            </if>
+        </where>
+        limit #{param.pageSize} offset #{param.page}
+    </select>
+    <select id="rollQueryRoom" resultMap="RoomResultMap">
+        select room_id, room_name, price, room_status, introduction, room_type
+        from t_room
+        <where>
+            room_status = 1
+            <if test="maxId != null">
+               and  room_id > #{maxId}
+            </if>
+        </where>
+        limit #{pageSize}
+    </select>
+    <select id="multipleQueryRoom" resultMap="RoomResultMap">
+        select room_id, room_name, price, room_status, introduction, room_type
+        from t_room
+        <where>
+            room_status = 1
+            <if test="req.minPrice != null">
+               and price &gt;= #{req.minPrice}
+            </if>
+            <if test="req.maxPrice != null">
+                and price &lt;= #{req.maxPrice}
+            </if>
+            <if test="req.roomType != null">
+                and room_type = #{req.roomType}
+            </if>
+            <if test="req.maxId != null">
+                and room_id > #{req.maxId}
+            </if>
+        </where>
+        limit #{req.pageSize}
+    </select>
 </mapper>

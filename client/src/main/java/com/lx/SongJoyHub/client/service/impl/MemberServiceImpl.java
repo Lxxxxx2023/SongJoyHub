@@ -79,8 +79,9 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, MemberDO> imple
         }
         UserInfoDTO userInfoDTO = UserInfoDTO.builder()
                 .userId(memberDO.getId().toString())
+                .level(memberDO.getLevel())
                 .userName(memberDO.getNick())
-                .userRole(UserRoleEnum.user)
+                .userRole(UserRoleEnum.USER)
                 .build();
         String accessToken = JWTUtil.generateToken(userInfoDTO);
         return MemberLoginRespDTO.builder().accessToken(accessToken).build();

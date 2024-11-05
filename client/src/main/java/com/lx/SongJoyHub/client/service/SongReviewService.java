@@ -2,8 +2,11 @@ package com.lx.SongJoyHub.client.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.lx.SongJoyHub.client.dao.entity.SongReviewDO;
+import com.lx.SongJoyHub.client.dto.req.SongMultipleQueryReqDTO;
 import com.lx.SongJoyHub.client.dto.req.SongReviewReqDTO;
-import com.lx.SongJoyHub.client.dto.resp.SongReviewRespDTO;
+import com.lx.SongJoyHub.client.dto.resp.SongReviewPageQueryRespDTO;
+import com.lx.SongJoyHub.client.dto.resp.SongReviewQueryDiffRespDTO;
+
 import java.util.List;
 
 
@@ -16,7 +19,7 @@ public interface SongReviewService extends IService<SongReviewDO> {
      * 查询未处理审批
      * @return 歌曲审批信息
      */
-    List<SongReviewRespDTO> examineQueryUnprocessed();
+    List<SongReviewPageQueryRespDTO> pageQuerySongReview(Integer page, Integer pageSize);
 
     /**
      * 审批 上传歌曲信息
@@ -36,4 +39,17 @@ public interface SongReviewService extends IService<SongReviewDO> {
      */
     void examineUpdateMusic(SongReviewReqDTO requestParam);
 
+    /**
+     * 多条件分页查询歌曲审核信息
+     * @param requestParam 入参
+     * @return 多条件分页查询歌曲审核信息 返回值
+     */
+    List<SongReviewPageQueryRespDTO> multipleQuerySongReview(SongMultipleQueryReqDTO requestParam);
+
+    /**
+     * 查询审核详情
+     * @param id 审核记录id
+     * @return 审核详情
+     */
+    SongReviewQueryDiffRespDTO querySongReviewDiff(Long id);
 }

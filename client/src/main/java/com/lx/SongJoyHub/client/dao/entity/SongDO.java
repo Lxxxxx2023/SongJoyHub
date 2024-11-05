@@ -14,7 +14,6 @@ import java.util.Date;
 /**
  * 歌曲实体类
  */
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

@@ -9,13 +9,18 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.lx.SongJoyHub.client.common.constant.RedisConstant;
+import com.lx.SongJoyHub.client.common.context.UserContext;
+import com.lx.SongJoyHub.client.common.enums.SongStatusEnum;
 import com.lx.SongJoyHub.client.dao.entity.SongDO;
 import com.lx.SongJoyHub.client.dao.entity.SongReviewDO;
+import com.lx.SongJoyHub.client.dao.entity.UpdateSongReviewBO;
 import com.lx.SongJoyHub.client.dao.mapper.SongMapper;
 import com.lx.SongJoyHub.client.dao.mapper.SongReviewMapper;
+import com.lx.SongJoyHub.client.dto.req.SongMultipleQueryReqDTO;
 import com.lx.SongJoyHub.client.dto.req.SongReviewReqDTO;
 import com.lx.SongJoyHub.client.dto.resp.SongQueryRespDTO;
-import com.lx.SongJoyHub.client.dto.resp.SongReviewRespDTO;
+import com.lx.SongJoyHub.client.dto.resp.SongReviewPageQueryRespDTO;
+import com.lx.SongJoyHub.client.dto.resp.SongReviewQueryDiffRespDTO;
 import com.lx.SongJoyHub.client.service.SongReviewService;
 import com.lx.SongJoyHub.client.util.RedisUtil;
 import com.lx.SongJoyHub.framework.exception.ServiceException;
@@ -24,6 +29,9 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 
@@ -43,24 +51,18 @@ public class SongReviewServiceImpl extends ServiceImpl<SongReviewMapper, SongRev
 
 
     @Override
-    public List<SongReviewRespDTO> examineQueryUnprocessed() {
-        LambdaQueryWrapper<SongReviewDO> queryWrapper = Wrappers.lambdaQuery(SongReviewDO.class)
-                .eq(SongReviewDO::getStatus, 0); // 查询未处理的
-        List<SongReviewDO> songReviewDOS = songReviewMapper.selectList(queryWrapper);
-        return songReviewDOS.stream().map(each -> BeanUtil.toBean(each, SongReviewRespDTO.class)).toList();
+    public List<SongReviewPageQueryRespDTO> pageQuerySongReview(Integer page, Integer pageSize) {
+        List<SongReviewPageQueryRespDTO> songReviewPageQueryRespDTOS = songReviewMapper.pageQuerySongReview(page, pageSize);
+        System.out.println(songReviewPageQueryRespDTOS);
+        return songReviewPageQueryRespDTOS;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void examineSaveMusic(SongReviewReqDTO requestParam) {
         // 处理审核信息
-        LambdaUpdateWrapper<SongReviewDO> updateWrapper = Wrappers.lambdaUpdate(SongReviewDO.class)
-                .eq(SongReviewDO::getId,requestParam.getId())
-//                .set(SongReviewDO::getOpId, UserContext.getUserId())
-//                .set(SongReviewDO::getOpName,UserContext.getUser().getUserName())
-                .set(SongReviewDO::getStatus, requestParam.getStatus())
-                .set(SongReviewDO::getNotes,requestParam.getNotes());
-        int update = songReviewMapper.update(updateWrapper);
+        UpdateSongReviewBO updateSongReviewBO = buildUpdateSongReview(requestParam);
+        int update = songReviewMapper.updateSongReview(updateSongReviewBO);
         if(!SqlHelper.retBool(update)) {
             throw new ServiceException("审批失败 id: " + requestParam.getId());
         }
@@ -68,7 +70,7 @@ public class SongReviewServiceImpl extends ServiceImpl<SongReviewMapper, SongRev
         // 审核通过 歌曲入库
         SongReviewDO songReviewDO = songReviewMapper.selectById(requestParam.getId());
         SongDO songDO = JSON.parseObject(songReviewDO.getNowData(), SongDO.class);
-        songDO.setSongStatus(1);
+        songDO.setSongStatus(SongStatusEnum.PLAYABLE.getCode());
         try{
             songMapper.insert(songDO);
         }catch (DuplicateKeyException e) {
@@ -78,24 +80,37 @@ public class SongReviewServiceImpl extends ServiceImpl<SongReviewMapper, SongRev
         refactorSongCache(songDO);
     }
 
+    private UpdateSongReviewBO buildUpdateSongReview(SongReviewReqDTO requestParam) {
+        return UpdateSongReviewBO.builder()
+                .notes(requestParam.getNotes())
+                .songReviewId(requestParam.getId())
+                .level(UserContext.getUser().getLevel())
+                .opId(Long.valueOf(UserContext.getUserId()))
+                .opName(UserContext.getUser().getUserName())
+                .status(requestParam.getStatus())
+                .build();
+
+    }
 
 
     @Override
     public void examineDeleteMusic(SongReviewReqDTO requestParam) {
         // 处理审核信息
-        LambdaUpdateWrapper<SongReviewDO> updateWrapper = Wrappers.lambdaUpdate(SongReviewDO.class)
-                .eq(SongReviewDO::getId, requestParam.getId())
-                .set(SongReviewDO::getStatus, requestParam.getStatus())
-                .set(SongReviewDO::getNotes,requestParam.getNotes());
-        int update = songReviewMapper.update(updateWrapper);
+        UpdateSongReviewBO updateSongReviewBO = buildUpdateSongReview(requestParam);
+        int update = songReviewMapper.updateSongReview(updateSongReviewBO);
         if(!SqlHelper.retBool(update)) {
             throw new ServiceException("审批删除歌曲失败 id: " + requestParam.getId());
         }
-        if(requestParam.getStatus() != 1) return;
+
         SongReviewDO songReviewDO = songReviewMapper.selectById(requestParam.getId());
         SongDO songDO = JSON.parseObject(songReviewDO.getNowData(), SongDO.class);
+        if(requestParam.getStatus() != 1) {
+            songMapper.restoreSongStatus(songDO.getSongId());
+            return;
+        }
         LambdaUpdateWrapper<SongDO> updateWrapperSong = Wrappers.lambdaUpdate(SongDO.class)
                 .eq(SongDO::getSongId, songDO.getSongId())
+                .set(SongDO::getSongStatus,SongStatusEnum.DELETED.getCode())
                 .set(SongDO::getDelFlag,1); // 标记为删除
         songMapper.update(updateWrapperSong);
         stringRedisTemplate.delete(String.format(RedisConstant.SONG_KEY, songDO.getSongId()));
@@ -105,17 +120,17 @@ public class SongReviewServiceImpl extends ServiceImpl<SongReviewMapper, SongRev
     @Transactional(rollbackFor = Exception.class)
     public void examineUpdateMusic(SongReviewReqDTO requestParam) {
         // 处理审核信息
-        LambdaUpdateWrapper<SongReviewDO> updateWrapper = Wrappers.lambdaUpdate(SongReviewDO.class)
-                .eq(SongReviewDO::getId, requestParam.getId())
-                .set(SongReviewDO::getStatus, requestParam.getStatus())
-                .set(SongReviewDO::getNotes,requestParam.getNotes());
-        int update = songReviewMapper.update(updateWrapper);
+        UpdateSongReviewBO updateSongReviewBO = buildUpdateSongReview(requestParam);
+        int update = songReviewMapper.updateSongReview(updateSongReviewBO);
         if(!SqlHelper.retBool(update)) {
             throw new ServiceException("审批修改歌曲失败 id: " + requestParam.getId());
         }
-        if(requestParam.getStatus() != 1) return;
         SongReviewDO songReviewDO = songReviewMapper.selectById(requestParam.getId());
         SongDO songDO = JSON.parseObject(songReviewDO.getNowData(), SongDO.class);
+        if(requestParam.getStatus() != 1) {
+            songMapper.restoreSongStatus(songDO.getSongId());
+            return;
+        }
         int updateSong = songMapper.updateSong(songDO);
         if(!SqlHelper.retBool(updateSong)) {
             throw new ServiceException("审核歌曲修改 id: " + requestParam.getId());
@@ -123,6 +138,30 @@ public class SongReviewServiceImpl extends ServiceImpl<SongReviewMapper, SongRev
         SongDO newSong = songMapper.selectById(songDO.getSongId());
         // 重构缓存
         refactorSongCache(newSong);
+    }
+
+    @Override
+    public List<SongReviewPageQueryRespDTO> multipleQuerySongReview(SongMultipleQueryReqDTO requestParam) {
+        requestParam.setPage(requestParam.getPage() - 1);
+        return songReviewMapper.multipleQuerySongReview(requestParam);
+    }
+
+    @Override
+    public SongReviewQueryDiffRespDTO querySongReviewDiff(Long id) {
+        SongReviewDO songReviewDO = songReviewMapper.selectById(id);
+        SongDO nowData = JSON.parseObject(songReviewDO.getNowData(), SongDO.class);
+        SongDO oldData = JSON.parseObject(songReviewDO.getOriginalData(), SongDO.class);
+        return SongReviewQueryDiffRespDTO.builder()
+                .cause(songReviewDO.getCause())
+                .oldData(oldData)
+                .newData(nowData)
+                .committerName(songReviewDO.getCommitterName())
+                .opName(songReviewDO.getOpName())
+                .createTime(songReviewDO.getCreateTime())
+                .updateTime(songReviewDO.getUpdateTime())
+                .notes(songReviewDO.getNotes())
+                .type(songReviewDO.getType())
+                .build();
     }
 
     private void refactorSongCache(SongDO songDO) {

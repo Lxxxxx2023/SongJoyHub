@@ -5,7 +5,7 @@
 <mapper namespace="com.lx.SongJoyHub.client.dao.mapper.ActivityMapper">
     <resultMap id="activityMap" type="com.lx.SongJoyHub.client.dao.entity.ActivityDO">
         <id column="activity_id" property="activityId"/>
-        <result column="active_name" property="activeName"/>
+        <result column="active_name" property="activityName"/>
         <result column="receive_rule" property="receiveRule"/>
         <result column="reward_content" property="rewardContent"/>
         <result column="valid_start_time" property="validStartTime"/>
@@ -22,8 +22,8 @@
             <if test="requestParam.activityId != null">
                 activity_id = #{requestParam.activityId}
             </if>
-            <if test="requestParam.activeName != null and requestParam.activeName!=''">
-                active_name = #{requestParam.activeName}
+            <if test="requestParam.activityName != null and requestParam.activityName!=''">
+                active_name = #{requestParam.activityName}
             </if>
             <if test="requestParam.activityStatus != null ">
                 activity_status = #{requestParam.activityStatus}

@@ -25,7 +25,7 @@ public class ActivityCreateParamInvalidChainFilter implements AbstractChainHandl
         if(requestParma.getValidStartTime().before(DateUtil.date())) {
             throw new ServiceException("创建活动时，活动生效时间不能晚于当前时间");
         }
-        if(requestParma.getValidEndTime().after(requestParma.getValidStartTime())) {
+        if(!requestParma.getValidEndTime().after(requestParma.getValidStartTime())) {
             throw new ServiceException("创建活动时，活动生效时间不能早于结束时间");
         }
     }

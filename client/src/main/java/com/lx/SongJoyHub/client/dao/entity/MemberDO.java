@@ -69,6 +69,10 @@ public class MemberDO {
     private Long levelId;
 
     /**
+     * 会员等级
+     */
+    private Integer level;
+    /**
     * 注册时间
     */
     private Date createTime;

@@ -15,7 +15,7 @@ public class ActivityCreateParamNotNullChainFilter implements AbstractChainHandl
 
     @Override
     public void handler(ActivityCreateReqDTO requestParam) {
-        if(requestParam.getActiveName() == null || StrUtil.isEmpty(requestParam.getActiveName())) {
+        if(requestParam.getActivityName() == null || StrUtil.isEmpty(requestParam.getActivityName())) {
             throw new ServiceException("创建活动时，活动名不能为空");
         }
         if(requestParam.getReceiveRule() == null || StrUtil.isEmpty(requestParam.getReceiveRule())) {

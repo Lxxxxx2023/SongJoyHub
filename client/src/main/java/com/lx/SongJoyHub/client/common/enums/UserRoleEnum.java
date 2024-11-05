@@ -16,9 +16,9 @@ import lombok.NoArgsConstructor;
 public enum UserRoleEnum {
     NOLOGIN(-1,"无需验证"),
 
-    user(0,"普通用户"),
+    USER(0,"普通用户"),
 
-    admin(1,"管理员");
+    ADMIN(1,"管理员");
 
     private Integer code;
     private String role;

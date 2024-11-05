@@ -28,7 +28,7 @@ public class ActivityDelayExecutorStatusConsumer implements RocketMQListener<Mes
 
     @Override
     public void onMessage(MessageWrapper<ActivityDelayEvent> messageWrapper) {
-        log.info("[消费者] 活动定期结束@变更记录发送状态 - 执行消费逻辑，消息体：{}", JSON.toJSONString(messageWrapper));
+        log.info("[消费者] 活动定期结束变更记录发送状态 - 执行消费逻辑，消息体：{}", JSON.toJSONString(messageWrapper));
         ActivityDelayEvent message = messageWrapper.getMessage();
         ActivityDO activityDO = ActivityDO.builder()
                 .activityId(message.getActivityId())
